@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.MusicPlayer" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:windowBackground">?android:attr/colorBackground</item>
+    </style>
+
+    <!-- 主题色板覆盖层，运行时由 BaseActivity 通过 theme.applyStyle() 叠加 -->
+    <style name="ThemeOverlay.MusicPlayer.Purple" parent="">
+        <item name="colorPrimary">@color/palette_purple</item>
+        <item name="colorOnPrimary">@color/palette_purple_on</item>
+        <item name="colorPrimaryContainer">@color/palette_purple_container</item>
+        <item name="colorOnPrimaryContainer">@color/palette_purple_on_container</item>
+    </style>
+
+    <style name="ThemeOverlay.MusicPlayer.Blue" parent="">
+        <item name="colorPrimary">@color/palette_blue</item>
+        <item name="colorOnPrimary">@color/palette_blue_on</item>
+        <item name="colorPrimaryContainer">@color/palette_blue_container</item>
+        <item name="colorOnPrimaryContainer">@color/palette_blue_on_container</item>
+    </style>
+
+    <style name="ThemeOverlay.MusicPlayer.Green" parent="">
+        <item name="colorPrimary">@color/palette_green</item>
+        <item name="colorOnPrimary">@color/palette_green_on</item>
+        <item name="colorPrimaryContainer">@color/palette_green_container</item>
+        <item name="colorOnPrimaryContainer">@color/palette_green_on_container</item>
+    </style>
+
+    <style name="ThemeOverlay.MusicPlayer.Orange" parent="">
+        <item name="colorPrimary">@color/palette_orange</item>
+        <item name="colorOnPrimary">@color/palette_orange_on</item>
+        <item name="colorPrimaryContainer">@color/palette_orange_container</item>
+        <item name="colorOnPrimaryContainer">@color/palette_orange_on_container</item>
+    </style>
+
+    <style name="ThemeOverlay.MusicPlayer.Teal" parent="">
+        <item name="colorPrimary">@color/palette_teal</item>
+        <item name="colorOnPrimary">@color/palette_teal_on</item>
+        <item name="colorPrimaryContainer">@color/palette_teal_container</item>
+        <item name="colorOnPrimaryContainer">@color/palette_teal_on_container</item>
+    </style>
+
+    <style name="ThemeOverlay.MusicPlayer.Red" parent="">
+        <item name="colorPrimary">@color/palette_red</item>
+        <item name="colorOnPrimary">@color/palette_red_on</item>
+        <item name="colorPrimaryContainer">@color/palette_red_container</item>
+        <item name="colorOnPrimaryContainer">@color/palette_red_on_container</item>
+    </style>
+
+    <color name="ic_launcher_background">#1B1B1F</color>
+
+    <style name="CoverShape">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">18dp</item>
+    </style>
+
+    <style name="CoverShapeSmall">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">8dp</item>
+    </style>
+</resources>

@@ -1,0 +1,14 @@
+prefix=/run/media/pangna/新加卷/库/音乐播放器/MusicPlayer/app/src/main/cpp/ffmpeg/x86_64
+exec_prefix=${prefix}
+libdir=/run/media/pangna/新加卷/库/音乐播放器/MusicPlayer/app/src/main/cpp/ffmpeg/x86_64/lib
+includedir=/run/media/pangna/新加卷/库/音乐播放器/MusicPlayer/app/src/main/cpp/ffmpeg/x86_64/include
+
+Name: libavutil
+Description: FFmpeg utility library
+Version: 59.39.100
+Requires: 
+Requires.private: 
+Conflicts:
+Libs: -L${libdir}  -lavutil 
+Libs.private: -pthread -lm -latomic -landroid -lmediandk
+Cflags: -I${includedir}

@@ -1,0 +1,31 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+.kotlin/
+
+# Android / IDE
+local.properties
+.idea/
+*.iml
+.cxx/
+captures/
+
+# 构建日志与临时文件
+build.log
+*.log
+*.tagtmp
+dl_*
+
+# 系统垃圾
+.DS_Store
+Thumbs.db
+
+# 签名文件（永远不要提交）
+*.jks
+*.keystore
+/*.keystore
+signing.properties
+
+# 插件示例的编译产物（build-sample.sh 自己生成）
+plugin-sample/*.jar

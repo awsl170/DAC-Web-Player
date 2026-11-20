@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="dl_normal">#E6E1E5</color>
+    <color name="dl_failed">#FFB4AB</color>
+
+    <!-- 主题色板：主色 / on主色 / 容器 / on容器 -->
+    <color name="palette_purple">#6750A4</color>
+    <color name="palette_purple_on">#FFFFFF</color>
+    <color name="palette_purple_container">#EADDFF</color>
+    <color name="palette_purple_on_container">#21005D</color>
+
+    <color name="palette_blue">#2D6CDF</color>
+    <color name="palette_blue_on">#FFFFFF</color>
+    <color name="palette_blue_container">#D9E2FF</color>
+    <color name="palette_blue_on_container">#001945</color>
+
+    <color name="palette_green">#2E7D32</color>
+    <color name="palette_green_on">#FFFFFF</color>
+    <color name="palette_green_container">#C8E6C9</color>
+    <color name="palette_green_on_container">#05300A</color>
+
+    <color name="palette_orange">#B26A00</color>
+    <color name="palette_orange_on">#FFFFFF</color>
+    <color name="palette_orange_container">#FFE0B2</color>
+    <color name="palette_orange_on_container">#3E2600</color>
+
+    <color name="palette_teal">#00696E</color>
+    <color name="palette_teal_on">#FFFFFF</color>
+    <color name="palette_teal_container">#B2EBF2</color>
+    <color name="palette_teal_on_container">#002022</color>
+
+    <color name="palette_red">#B3261E</color>
+    <color name="palette_red_on">#FFFFFF</color>
+    <color name="palette_red_container">#FFDAD6</color>
+    <color name="palette_red_on_container">#410E0B</color>
+</resources>

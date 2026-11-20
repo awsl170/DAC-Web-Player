@@ -1,0 +1,510 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <!-- 搜索页 -->
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
+            android:id="@+id/pageSearch"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <com.google.android.material.appbar.AppBarLayout
+                android:id="@+id/appBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/colorSurface"
+                app:elevation="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingHorizontal="16dp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="4dp">
+
+                    <!-- 标题行 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/app_name"
+                            android:textSize="24sp"
+                            android:textStyle="bold" />
+
+                        <ImageButton
+                            android:id="@+id/queueBtn"
+                            android:layout_width="44dp"
+                            android:layout_height="44dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/queue"
+                            android:padding="10dp"
+                            android:src="@drawable/ic_queue"
+                            android:visibility="gone" />
+
+                        <ImageButton
+                            android:id="@+id/settingsBtn"
+                            android:layout_width="44dp"
+                            android:layout_height="44dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/settings"
+                            android:padding="10dp"
+                            android:src="@drawable/ic_settings" />
+                    </LinearLayout>
+
+                    <!-- 搜索框 -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:layout_marginTop="4dp"
+                        app:cardBackgroundColor="?attr/colorSurfaceVariant"
+                        app:cardCornerRadius="24dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="0dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="4dp">
+
+                            <ImageView
+                                android:layout_width="22dp"
+                                android:layout_height="22dp"
+                                android:contentDescription="@string/search"
+                                android:src="@drawable/ic_search" />
+
+                            <EditText
+                                android:id="@+id/searchInput"
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_marginStart="10dp"
+                                android:layout_weight="1"
+                                android:background="@null"
+                                android:hint="@string/search_hint"
+                                android:imeOptions="actionSearch"
+                                android:inputType="text"
+                                android:maxLines="1"
+                                android:singleLine="true"
+                                android:textSize="16sp" />
+
+                            <ImageButton
+                                android:id="@+id/clearSearch"
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                android:background="?attr/selectableItemBackgroundBorderless"
+                                android:contentDescription="@string/clear"
+                                android:padding="10dp"
+                                android:src="@drawable/ic_close"
+                                android:visibility="gone" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- 正常状态栏：音质 -->
+                    <LinearLayout
+                        android:id="@+id/normalBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="4dp">
+
+                        <TextView
+                            android:id="@+id/qualityBtn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_chip"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="6dp"
+                            android:text="@string/quality_prefix_default"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/statusHint"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <!-- 多选状态栏 -->
+                    <LinearLayout
+                        android:id="@+id/selectionBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="4dp"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:id="@+id/selectionInfo"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/selectAllBtn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="?attr/selectableItemBackground"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="8dp"
+                            android:text="@string/select_all"
+                            android:textColor="?attr/colorPrimary"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:id="@+id/downloadSelBtn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="?attr/selectableItemBackground"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="8dp"
+                            android:text="@string/download_selected"
+                            android:textColor="?attr/colorPrimary"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:id="@+id/exitSelectBtn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="?attr/selectableItemBackground"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="8dp"
+                            android:text="@string/exit_select"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.appbar.AppBarLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/results"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingBottom="96dp"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+            <ProgressBar
+                android:id="@+id/searchProgress"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="center"
+                android:indeterminateTint="?attr/colorPrimary"
+                android:visibility="gone" />
+        </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+        <!-- 歌单页 -->
+        <LinearLayout
+            android:id="@+id/pagePlaylist"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="16dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/playlists"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/newPlaylistBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="8dp"
+                    android:text="@string/playlist_new"
+                    android:textColor="?attr/colorPrimary"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/playlists"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:clipToPadding="false"
+                android:paddingBottom="96dp" />
+
+            <TextView
+                android:id="@+id/playlistEmpty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:padding="32dp"
+                android:text="@string/playlist_empty"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <!-- 本地页 -->
+        <LinearLayout
+            android:id="@+id/pageLocal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="16dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/local_music"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
+
+                <ImageButton
+                    android:id="@+id/refreshLocal"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/refresh"
+                    android:padding="10dp"
+                    android:src="@drawable/ic_refresh" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/localInfo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="16dp"
+                android:paddingBottom="8dp"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="12sp" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/locals"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:clipToPadding="false"
+                android:paddingBottom="96dp" />
+
+            <TextView
+                android:id="@+id/localEmpty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:padding="32dp"
+                android:text="@string/local_empty"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="14sp"
+                android:visibility="gone" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <!-- 迷你播放条 -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/miniBar"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_marginHorizontal="10dp"
+        android:layout_marginBottom="6dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone"
+        app:cardBackgroundColor="?attr/colorSurfaceVariant"
+        app:cardCornerRadius="14dp"
+        app:cardElevation="6dp"
+        app:strokeWidth="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="10dp">
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/miniCover"
+                android:layout_width="46dp"
+                android:layout_height="46dp"
+                android:background="?attr/colorSurface"
+                android:contentDescription="@string/cover"
+                android:scaleType="centerCrop"
+                app:shapeAppearanceOverlay="@style/CoverShapeSmall" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/miniTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/miniArtist"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/miniPlay"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/play"
+                android:padding="12dp"
+                android:src="@drawable/ic_play" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- 自绘底部导航：比 BottomNavigationView 更好压高度，也不会有自带容器底色 -->
+    <LinearLayout
+        android:id="@+id/bottomNav"
+        android:layout_width="match_parent"
+        android:layout_height="58dp"
+        android:background="?attr/colorSurface"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:id="@+id/tabSearch"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/tabSearchIcon"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:contentDescription="@string/nav_search"
+                android:src="@drawable/ic_search" />
+
+            <TextView
+                android:id="@+id/tabSearchLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/nav_search"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/tabPlaylist"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/tabPlaylistIcon"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:contentDescription="@string/playlists"
+                android:src="@drawable/ic_playlist" />
+
+            <TextView
+                android:id="@+id/tabPlaylistLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/playlists"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/tabLocal"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/tabLocalIcon"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:contentDescription="@string/local_music"
+                android:src="@drawable/ic_folder" />
+
+            <TextView
+                android:id="@+id/tabLocalLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/local_short"
+                android:textSize="11sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

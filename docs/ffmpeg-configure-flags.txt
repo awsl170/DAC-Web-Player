@@ -1,0 +1,35 @@
+# FFmpeg 7.1 —— 随 APK 分发的 libav*.so 的实际 configure 选项
+#
+# 本文件内容直接取自二进制内嵌的 FFMPEG_CONFIGURATION 字符串（权威来源），
+# 可用以下命令在任意一份 .so 上复核：
+#   strings app/src/main/cpp/ffmpeg/arm64-v8a/lib/libavformat.so | grep -m1 -- --enable-cross-compile
+#
+# 工具链：Android NDK r27c，--target-os=android --api=31（各 ABI 仅 --arch/--cpu/--cc 不同）
+# 复现脚本：scripts/build-ffmpeg-android.sh（与下面完全一致）
+
+--enable-cross-compile
+--enable-shared
+--disable-static
+--disable-programs
+--disable-doc
+--disable-debug
+--disable-avdevice
+--disable-postproc
+--disable-avfilter
+--disable-swscale
+--enable-swresample
+--enable-small
+--disable-everything
+--enable-avformat
+--enable-avcodec
+--enable-avutil
+--enable-protocol=file,pipe
+--enable-demuxer=wav,flac,mp3,mov,aiff,dsf,asf,aac,dts,ogg
+--enable-decoder=pcm_s16le,pcm_s24le,pcm_s32le,pcm_f32le,pcm_u8,flac,alac,mp3,aac,aac_latm,dca,opus,wmav1,wmav2,wmapro,wmavoice
+--enable-parser=flac,mpegaudio,aac,dca,opus
+--disable-encoder=*
+--disable-muxer=*
+--extra-cflags=-O3 -fPIC -ffunction-sections -fdata-sections
+--extra-ldflags=-Wl,--gc-sections
+
+# 未使用 --enable-gpl 与 --enable-nonfree ⇒ 许可为 LGPL-2.1-or-later。
