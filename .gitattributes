@@ -1,5 +1,5 @@
 # GitHub 语言统计：预编译的 FFmpeg 头/库不算本项目的“源码”
-app/src/main/cpp/ffmpeg/**      linguist-vendored
+prebuilt/ffmpeg/**      linguist-vendored
 app/src/main/jniLibs/**         linguist-vendored
 app/src/main/assets/licenses/** linguist-documentation
 LICENSES/**                     linguist-documentation

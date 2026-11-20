@@ -22,7 +22,7 @@ cp "$PROJ/app/src/main/cpp/Android.mk" "$WORK/jni/"
 cp "$PROJ/app/src/main/cpp/Application.mk" "$WORK/jni/"
 # FFmpeg 预编译库（Ubuntu 侧生成）一起带进 ASCII 工作目录，路径里不能有中文
 rm -rf "$WORK/jni/ffmpeg"
-cp -r "$PROJ/app/src/main/cpp/ffmpeg" "$WORK/jni/ffmpeg"
+cp -r "$PROJ/prebuilt/ffmpeg" "$WORK/jni/ffmpeg"
 
 cd "$WORK"
 "$NDK/ndk-build.cmd" NDK_PROJECT_PATH=. APP_BUILD_SCRIPT=jni/Android.mk \

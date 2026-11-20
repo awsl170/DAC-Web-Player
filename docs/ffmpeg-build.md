@@ -30,7 +30,7 @@
 ## 3. 完整的 configure 选项
 
 一键脚本：`scripts/build-ffmpeg-android.sh`（在 Ubuntu/Linux 上执行，产物直接写进
-`MusicPlayer/app/src/main/cpp/ffmpeg/<abi>/{include,lib}`）。
+`MusicPlayer/prebuilt/ffmpeg/<abi>/{include,lib}`）。
 
 核心选项（其余为 `--prefix`/`--sysroot`/`--cc`/`--cxx`/`--ar`/`--ranlib`/`--strip`/`--nm`
 等工具链参数）：
@@ -56,7 +56,7 @@
 以上清单与**已分发二进制内嵌的 `FFMPEG_CONFIGURATION` 字符串逐项一致**，可自行复核：
 
 ```bash
-strings app/src/main/cpp/ffmpeg/arm64-v8a/lib/libavformat.so | grep -m1 -- --enable-cross-compile
+strings prebuilt/ffmpeg/arm64-v8a/lib/libavformat.so | grep -m1 -- --enable-cross-compile
 ```
 
 （`docs/ffmpeg-configure-flags.txt` 保存同一份文本，便于打包对照。）
@@ -98,5 +98,5 @@ bash build-native.sh
 JAVA_HOME=/path/to/jdk17 ./gradlew --no-daemon assembleDebug
 ```
 
-第 3 步会读取 `app/src/main/cpp/ffmpeg/<abi>/` 下的头文件与 `.so`，链接出
+第 3 步会读取 `prebuilt/ffmpeg/<abi>/` 下的头文件与 `.so`，链接出
 `libffaudio.so`；第 4 步把 `jniLibs/<abi>/*.so` 打进 APK。

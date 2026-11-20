@@ -5,7 +5,7 @@
 # 用法：  bash build-ffmpeg-android.sh
 #        （首次会下载 NDK ~600MB、FFmpeg ~11MB，缓存在 ~/.cache/dac-ffmpeg）
 #
-# 产物：  /e/库/音乐播放器/MusicPlayer/app/src/main/cpp/ffmpeg/<abi>/{include,lib}
+# 产物：  /e/库/音乐播放器/MusicPlayer/prebuilt/ffmpeg/<abi>/{include,lib}
 #         <abi> = arm64-v8a / armeabi-v7a / x86_64
 #
 # 只编需要的部分（Flac/ALAC/MP3/PCM + wav/flac/mp3/mov/aiff 解析 + swresample），
@@ -17,7 +17,7 @@ set -euo pipefail
 
 NDK_VER="r27c"
 FFMPEG_VER="7.1"
-API=31                       # 与 app/build.gradle 的 minSdk 31 对齐
+API=22                       # 与 app/build.gradle 的 minSdk 22 对齐（5.1 也能加载）
 ABIS=${ABIS:-"arm64-v8a armeabi-v7a x86_64"}
 
 # 工程里放 prebuilt 的位置（NTFS 挂载点，脚本会自动探测）
@@ -34,7 +34,7 @@ if [ -z "$PROJ" ]; then
   echo "找不到工程目录，请手动设置： PROJ=/path/to/MusicPlayer bash $0"
   exit 1
 fi
-OUT_ROOT="$PROJ/app/src/main/cpp/ffmpeg"
+OUT_ROOT="$PROJ/prebuilt/ffmpeg"
 echo "== 工程目录: $PROJ"
 echo "== 输出目录: $OUT_ROOT"
 
