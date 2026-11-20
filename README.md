@@ -20,6 +20,17 @@
 > ⚠️ 本仓库只包含播放器与插件框架，不含任何站点的接口地址或解析代码。插件由第三方提供，
 > 使用哪个插件、访问哪些服务由使用者自行选择并承担相应责任；本项目不托管、不分发任何音频内容。
 
+## 安装
+
+到 [Releases](https://github.com/awsl170/DAC-Web-Player/releases) 下载 `app-release.apk` 直接安装
+（Android 5.1 及以上；已签名的正式包，**不要**再叠加安装旧版 `com.music24.player`）。
+
+- 一台设备只需装一个 ABI 无关的包：APK 内含 `arm64-v8a` / `armeabi-v7a` / `x86_64` 三套 native 库
+- 首次使用：进「设置 → 音源插件」导入插件 jar，否则搜索不到任何内容（主程序不自带音源）
+- 接 USB DAC：插上后进「设置 → DAC 直通」，选设备即可独占输出；电视遥控器可用方向键 + 确认键操作
+- 该版本签名证书 SHA-256：`0d468bb5e29f341b5d1f89ccf60edf0b43a970bbfd8d1c928d039c9422f28689`
+  （`CN=awsl170`）；想核对可执行 `apksigner verify --print-certs app-release.apk`
+
 ## 功能
 
 **音乐发现与播放**
