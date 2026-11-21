@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.hardware.usb.UsbManager
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -22,6 +23,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.slider.Slider
 import com.dacweb.player.audio.DacPlayer
 import com.dacweb.player.audio.LocalAudioInfo
+import com.dacweb.player.net.NetMeta
 import com.dacweb.player.audio.DacRoute
 import com.dacweb.player.audio.PlayQueue
 import com.dacweb.player.audio.PlayRepeat
@@ -40,6 +42,7 @@ import com.dacweb.player.prefs.AppPrefs
 import com.dacweb.player.prefs.LyricPalette
 import com.dacweb.player.tag.TagUpdater
 import com.dacweb.player.ui.EqSheet
+import androidx.constraintlayout.widget.ConstraintSet
 import com.dacweb.player.ui.LyricsSearchSheet
 import com.dacweb.player.ui.QueueSheet
 import kotlinx.coroutines.Dispatchers
@@ -57,6 +60,9 @@ class PlayerActivity : BaseActivity() {
     private var lyricsFor: String? = null
     private var lyricSig: Pair<Int, Int>? = null
     private var lyricsVisible = false
+    /** 大屏(A>=700dp)：封面钉左、歌词在右，两者同屏，不再互相顶替 */
+    private var wide = false
+    private var wideArtApplied = false
     private var lastLine = -2
 
     /** 本地曲目规格缓存（mediaId → "24bit · 96kHz · 1024kb/s"），避免每次 bind 重读文件头。 */
@@ -120,12 +126,40 @@ class PlayerActivity : BaseActivity() {
         }
     }
 
+    /**
+     * 大屏（电视/平板，>=700dp 宽）把封面和歌词并排：封面在左、歌词在右；
+     * 竖屏手机保持原来的「封面居中、歌词覆盖其上」。
+     */
+    private fun applyWideArt() {
+        if (wideArtApplied) return
+        if (resources.configuration.screenWidthDp < 700) return
+        wideArtApplied = true
+        val gap = (16 * resources.displayMetrics.density).toInt()
+        val cs = ConstraintSet()
+        cs.clone(b.artArea)
+        cs.clear(R.id.cover, ConstraintSet.END)
+        cs.connect(
+            R.id.lyricsScroll, ConstraintSet.START,
+            R.id.cover, ConstraintSet.END, gap
+        )
+        cs.connect(
+            R.id.lyricsScroll, ConstraintSet.END,
+            ConstraintSet.PARENT_ID, ConstraintSet.END, 0
+        )
+        cs.applyTo(b.artArea)
+        // 大屏上歌词就摆在封面右边，没必要再点一次「歌词」：直接打开
+        wide = true
+        showLyrics(true)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         b = ActivityPlayerBinding.inflate(layoutInflater)
         setContentView(b.root)
 
         DownloadQueue.init(this)
+
+        applyWideArt()
 
         b.btnBack.setOnClickListener { finish() }
         b.btnLyrics.setOnClickListener { showLyrics(!lyricsVisible) }
@@ -287,6 +321,8 @@ class PlayerActivity : BaseActivity() {
         updateModes(c)
         updateProgress()
 
+        applyNetTags(item)
+
         val id = item.mediaId
         if (id != lyricsFor) {
             lyricsFor = id
@@ -299,6 +335,28 @@ class PlayerActivity : BaseActivity() {
         }
     }
 
+    /**
+     * 网络文件（dacnet-*）：列表里只有文件名，切歌到下一首时没有标签。
+     * 播放开始后在后台读一次容器头，把标题/歌手/封面补到界面上（规格由 loadLocalSpec 负责）。
+     */
+    private fun applyNetTags(item: MediaItem) {
+        val uri = item.localConfiguration?.uri ?: return
+        if (uri.scheme?.startsWith("dacnet-") != true) return
+        val id = item.mediaId
+        lifecycleScope.launch {
+            val m = withContext(Dispatchers.IO) { NetMeta.probe(this@PlayerActivity, uri) } ?: return@launch
+            if (PlayerHub.controller?.currentMediaItem?.mediaId != id) return@launch
+            if (m.title.isNotBlank()) {
+                b.title.text = m.title
+                b.title.isSelected = true
+            }
+            if (m.artist.isNotBlank()) b.artist.text = m.artist
+            if (m.spec.isNotBlank()) b.qualityLabel.text = m.spec
+            m.cover?.let { b.cover.load(Uri.fromFile(it)) }
+            if (m.title.isNotBlank() && id == lyricsFor) loadLyrics(m.title, m.artist)
+        }
+    }
+
     /** 本地曲目：读容器头的位深/采样率/平均码率，读完若还是同一首就刷新标签。 */
     private fun loadLocalSpec(item: MediaItem) {
         val id = item.mediaId
@@ -306,7 +364,12 @@ class PlayerActivity : BaseActivity() {
         val uri = item.localConfiguration?.uri ?: return
         lifecycleScope.launch {
             val text = withContext(Dispatchers.IO) {
-                LocalAudioInfo.format(LocalAudioInfo.read(this@PlayerActivity, uri))
+                // 网络文件（dacnet-*）读头部字节解析容器；本地文件仍走 MediaExtractor/FFmpeg
+                if (uri.scheme?.startsWith("dacnet-") == true) {
+                    NetMeta.specOf(this@PlayerActivity, uri)
+                } else {
+                    LocalAudioInfo.format(LocalAudioInfo.read(this@PlayerActivity, uri))
+                }
             }
             if (text.isBlank()) return@launch
             localSpec[id] = text
@@ -318,7 +381,8 @@ class PlayerActivity : BaseActivity() {
 
     private fun showLyrics(show: Boolean) {
         lyricsVisible = show
-        b.cover.visibility = if (show) View.INVISIBLE else View.VISIBLE
+        // 小屏是"封面 / 歌词"二选一切换；大屏两者并排，封面始终显示
+        b.cover.visibility = if (show && !wide) View.INVISIBLE else View.VISIBLE
         b.lyricsScroll.visibility = if (show) View.VISIBLE else View.GONE
         b.btnLyrics.text = getString(if (show) R.string.cover else R.string.lyrics)
         b.btnLyricSearch.visibility = if (show) View.VISIBLE else View.GONE
@@ -377,6 +441,9 @@ class PlayerActivity : BaseActivity() {
                 LyricsRepo.loadFor(this@PlayerActivity, name, artist, localUri)
             }.getOrDefault(emptyList())
             if (lyricsFor != forId) return@launch
+            // 同一首歌会被元数据刷新触发多次加载：内容一样就什么都不做，
+            // 否则 buildLyricViews() 会把歌词滚回开头（用户看到的就是"突然回到开始"）。
+            if (loaded.size == lyrics.size && loaded.indices.all { loaded[it].text == lyrics[it].text }) return@launch
             lyrics = loaded
             buildLyricViews()
         }
@@ -406,7 +473,8 @@ class PlayerActivity : BaseActivity() {
             lineViews += tv
         }
         lastLine = -2
-        updateLyricHighlight()
+        // 重建后立刻按当前位置定位，避免停在第 0 行看起来像"回到开始"
+        b.lyricBox.post { updateLyricHighlight() }
     }
 
     private fun updateLyricHighlight() {
@@ -426,7 +494,7 @@ class PlayerActivity : BaseActivity() {
             tv.alpha = if (active) 1f else 0.55f
             tv.textSize = if (active) baseSize + 1.5f else baseSize
         }
-        if (idx in lineViews.indices) {
+        if (idx >= 0 && idx in lineViews.indices) {
             val target = lineViews[idx]
             val y = target.top - b.artArea.height / 2 + target.height / 2
             runCatching { b.lyricsScroll.smoothScrollTo(0, y.coerceAtLeast(0)) }
@@ -436,6 +504,10 @@ class PlayerActivity : BaseActivity() {
     /** 设置里改过字号/颜色后回到播放页，重建一次歌词视图。 */
     override fun onResume() {
         super.onResume()
+        if (currentFocus == null) {
+            val v: android.view.View = b.btnPlay
+            if (v.isInTouchMode) v.requestFocusFromTouch() else v.requestFocus()
+        }
         if (lyrics.isNotEmpty()) {
             val sig = AppPrefs.lyricSize(this) to AppPrefs.lyricColor(this)
             if (sig != lyricSig) buildLyricViews()

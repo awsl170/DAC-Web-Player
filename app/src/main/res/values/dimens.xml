@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 播放页底部四个次要按钮到底边的距离。手机贴底即可；电视过扫描会切掉贴边按钮，单独放大 -->
+    <dimen name="player_bottom_margin">8dp</dimen>
+</resources>

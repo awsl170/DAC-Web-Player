@@ -23,7 +23,7 @@ static void fill_sine(int16_t *buf, int frames, int channels, int rate, double *
 }
 
 JNIEXPORT jint JNICALL
-Java_com_music24_player_audio_NativeTone_nativeAAudioTone(
+Java_com_dacweb_player_audio_NativeTone_nativeAAudioTone(
         JNIEnv *env, jobject thiz, jint rate, jint ms, jint channels) {
 #if __ANDROID_API__ >= 26
     AAudioStreamBuilder *builder = NULL;
@@ -86,7 +86,7 @@ Java_com_music24_player_audio_NativeTone_nativeAAudioTone(
 }
 
 JNIEXPORT jint JNICALL
-Java_com_music24_player_audio_NativeTone_nativeOpenSLTone(
+Java_com_dacweb_player_audio_NativeTone_nativeOpenSLTone(
         JNIEnv *env, jobject thiz, jint rate, jint ms) {
     SLObjectItf engineObj = NULL;
     SLEngineItf engine = NULL;

@@ -22,11 +22,13 @@ object FfAudio {
 
     fun available(): Boolean = runCatching {
         if (!loaded) {
-            // 顺序不能乱：avformat 依赖 avcodec，avcodec 依赖 avutil，ffaudio 依赖全部
-            System.loadLibrary("avutil")
-            System.loadLibrary("swresample")
-            System.loadLibrary("avcodec")
-            System.loadLibrary("avformat")
+            // 顺序不能乱：avformat 依赖 avcodec，avcodec 依赖 avutil，ffaudio 依赖全部。
+            // 这里必须用我们自己的 soname（libdac*）：Android 5.1 的 linker 没有命名空间隔离，
+            // 叫 "avcodec"/"avformat" 会被电视固件自带的同名系统库抢先满足，ffaudio 就加载不起来。
+            System.loadLibrary("dacvut")
+            System.loadLibrary("dacswresmp")
+            System.loadLibrary("dacavc2")
+            System.loadLibrary("dacafmts")
             System.loadLibrary("ffaudio")
             loaded = true
         }
@@ -149,6 +151,47 @@ object FfAudio {
     ) {
         val isEmpty: Boolean
             get() = title.isEmpty() && artist.isEmpty() && album.isEmpty() && cover == null
+    }
+
+    /** 头部字节解析结果（网络文件用，避免整首下载）。 */
+    class Head(
+        val title: String,
+        val artist: String,
+        val album: String,
+        val cover: ByteArray?,
+        val coverMime: String,
+        val rateHz: Int,
+        val bits: Int,
+        val channels: Int,
+        val codecId: Int,
+        val durationMs: Long,
+        val kbps: Int
+    )
+
+    private external fun nativeProbeMem(data: ByteArray): Array<Any?>?
+
+    /**
+     * 只读容器头：传前若干字节（建议 2 MiB 内），解析标签 + 音频规格，不解码。
+     * 网络后端（SMB/FTP/WebDAV）先读头部，再交给这里，这样列表不必为每个文件发请求。
+     */
+    fun probeMem(data: ByteArray): Head? {
+        if (!available() || data.size < 16) return null
+        val raw = runCatching { nativeProbeMem(data) }.getOrNull() ?: return null
+        @Suppress("UNCHECKED_CAST")
+        val fields = (raw.getOrNull(0) as? Array<String?>) ?: emptyArray()
+        fun at(i: Int) = fields.getOrNull(i).orEmpty()
+        val info = raw.getOrNull(3) as? IntArray ?: intArrayOf()
+        return Head(
+            title = at(0), artist = at(1), album = at(2),
+            cover = raw.getOrNull(1) as? ByteArray,
+            coverMime = (raw.getOrNull(2) as? String).orEmpty(),
+            rateHz = info.getOrNull(0) ?: 0,
+            bits = info.getOrNull(1) ?: 0,
+            channels = info.getOrNull(2) ?: 0,
+            codecId = info.getOrNull(3) ?: 0,
+            durationMs = (info.getOrNull(4) ?: 0).toLong(),
+            kbps = info.getOrNull(5) ?: 0
+        )
     }
 
     private external fun nativeTags(path: String?, fd: Int): Array<Any?>?

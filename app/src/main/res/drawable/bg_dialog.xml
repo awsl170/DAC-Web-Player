@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 居中弹窗的底：电视上没有底部弹出的手势，改成窗口更直观 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <corners android:radius="20dp" />
+    <solid android:color="?attr/colorSurfaceContainerHigh" />
+</shape>

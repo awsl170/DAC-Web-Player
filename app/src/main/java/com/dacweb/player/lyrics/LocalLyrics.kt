@@ -2,6 +2,7 @@ package com.dacweb.player.lyrics
 
 import android.content.Context
 import android.net.Uri
+import com.dacweb.player.net.NetStore
 import java.io.File
 import java.io.InputStream
 import java.io.ByteArrayOutputStream
@@ -17,6 +18,8 @@ import java.nio.ByteOrder
  */
 object LocalLyrics {
 
+    private const val HEAD_CAP = 2 * 1024 * 1024
+
     /** 返回文件里的歌词原文；没有则 null。 */
     fun read(ctx: Context, uri: Uri): String? {
         val head = runCatching { openHead(ctx, uri, 4) }.getOrNull() ?: return null
@@ -30,18 +33,48 @@ object LocalLyrics {
         return text?.trim()?.takeIf { it.isNotBlank() }
     }
 
-    private fun openStream(ctx: Context, uri: Uri): InputStream? = when (uri.scheme) {
-        "file" -> uri.path?.let { File(it).takeIf(File::exists)?.inputStream() }
+    private fun openStream(ctx: Context, uri: Uri): InputStream? = when {
+        uri.scheme == "file" -> uri.path?.let { File(it).takeIf(File::exists)?.inputStream() }
+        uri.scheme?.startsWith("dacnet-") == true -> {
+            // SMB/FTP/WebDAV：借 NetReader 读（只读头部，不整首下载）
+            val client = NetStore.client()
+            val reader = client?.open(uri.path.orEmpty().trim('/'))
+            if (reader == null) null else NetReaderStream(reader)
+        }
         else -> ctx.contentResolver.openInputStream(uri)
+    }
+
+    /** 把 NetReader 包成 InputStream（顺序读，够解析容器头）。 */
+    private class NetReaderStream(private val r: com.dacweb.player.net.NetReader) : InputStream() {
+        private var pos = 0L
+        override fun read(): Int {
+            val one = ByteArray(1)
+            return if (read(one, 0, 1) <= 0) -1 else one[0].toInt() and 0xff
+        }
+        override fun read(b: ByteArray, off: Int, len: Int): Int {
+            if (len == 0) return 0
+            val n = r.readAt(pos, b, off, len)
+            if (n > 0) pos += n
+            return n
+        }
+        override fun close() { runCatching { r.close() } }
     }
 
     private fun openHead(ctx: Context, uri: Uri, n: Int): ByteArray? =
         openStream(ctx, uri)?.use { it.readNBytes(n) }
 
+    /** 标签区都在文件开头：只读前 4 MiB，别把几十 MB 的整首歌搬进内存。 */
     private fun readAll(ctx: Context, uri: Uri): ByteArray? =
         openStream(ctx, uri)?.use { input ->
             val out = ByteArrayOutputStream(64 * 1024)
-            input.copyTo(out)
+            val buf = ByteArray(64 * 1024)
+            var total = 0
+            while (total < HEAD_CAP) {
+                val n = input.read(buf, 0, minOf(buf.size, HEAD_CAP - total))
+                if (n <= 0) break
+                out.write(buf, 0, n)
+                total += n
+            }
             out.toByteArray()
         }
 
@@ -115,12 +148,41 @@ object LocalLyrics {
         return body.size
     }
 
+    /**
+     * 标签里的中文常见两种存法：ID3v2.4/Vorbis 的 UTF-8，以及老工具的 GBK。
+     * 先按 UTF-8 严格解码，失败再退 GB18030（兼容 GBK），最后才 ISO-8859-1 兜底。
+     */
+    private fun smartDecode(raw: ByteArray, from: Int, to: Int): String {
+        if (to <= from) return ""
+        val bytes = raw.copyOfRange(from, to).let {
+            // 去掉结尾的 NUL
+            var e = it.size
+            while (e > 0 && it[e - 1].toInt() == 0) e--
+            if (e == it.size) it else it.copyOf(e)
+        }
+        if (bytes.isEmpty()) return ""
+        StrictUtf8.decode(bytes)?.let { return it }
+        runCatching { return String(bytes, charset("GB18030")) }
+        return String(bytes, Charsets.ISO_8859_1)
+    }
+
+    /** UTF-8 严格解码器：遇到非法序列返回 null。 */
+    private object StrictUtf8 {
+        fun decode(b: ByteArray): String? = runCatching {
+            Charsets.UTF_8.newDecoder()
+                .onMalformedInput(java.nio.charset.CodingErrorAction.REPORT)
+                .onUnmappableCharacter(java.nio.charset.CodingErrorAction.REPORT)
+                .decode(ByteBuffer.wrap(b))
+                .toString()
+        }.getOrNull()
+    }
+
     private fun decode(body: ByteArray, from: Int, to: Int, enc: Int): String? {
         if (to <= from) return null
         val bytes = body.copyOfRange(from, to)
         return runCatching {
             when (enc) {
-                0 -> String(bytes, Charsets.ISO_8859_1)
+                0 -> smartDecode(bytes, 0, bytes.size)
                 1 -> String(bytes, Charsets.UTF_16)
                 2 -> String(bytes, Charsets.UTF_16BE)
                 else -> String(bytes, Charsets.UTF_8)
@@ -162,12 +224,13 @@ object LocalLyrics {
             if (l <= 0 || l > bb.remaining()) return null
             val raw = ByteArray(l)
             bb.get(raw)
-            val kv = String(raw, Charsets.UTF_8)
-            val eq = kv.indexOf('=')
+            val eq = raw.indexOf('='.code.toByte())
             if (eq <= 0) continue
-            val key = kv.substring(0, eq).uppercase()
-            if (key == "LYRICS" || key == "UNSYNCEDLYRICS" || key == "UNSYNCHRONISEDLYRICS") {
-                kv.substring(eq + 1).takeIf { it.isNotBlank() }?.let { return it }
+            val key = String(raw, 0, eq, Charsets.ISO_8859_1).trim().uppercase()
+            if (key == "LYRICS" || key == "UNSYNCEDLYRICS" ||
+                key == "UNSYNCHRONISEDLYRICS" || key == "USLT"
+            ) {
+                smartDecode(raw, eq + 1, raw.size).takeIf { it.isNotBlank() }?.let { return it }
             }
         }
         return null

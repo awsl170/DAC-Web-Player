@@ -20,8 +20,8 @@ android {
         applicationId "com.dacweb.player"
         minSdk 22
         targetSdk 35
-        versionCode 2
-        versionName "1.0"
+        versionCode 4
+        versionName "1.1"
 
         ndk {
             abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86_64'
@@ -56,6 +56,8 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
+        // SMB/FTP/SFTP 的 Java 库用到 java.util.Base64 等 API 26+ 的类，靠脱糖补到 minSdk 22
+        coreLibraryDesugaringEnabled true
     }
     kotlinOptions {
         jvmTarget = '17'
@@ -106,4 +108,10 @@ dependencies {
     implementation 'androidx.media3:media3-database:1.4.1'
     implementation 'androidx.media3:media3-session:1.4.1'
     implementation 'androidx.media3:media3-ui:1.4.1'
+
+    // 网络文件服务器（SMB / FTP / SFTP 全部用成熟开源实现，不自己写协议）
+    implementation 'eu.agno3.jcifs:jcifs-ng:2.1.10'
+    implementation 'commons-net:commons-net:3.11.1'
+    implementation 'com.github.mwiede:jsch:0.2.20'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
 }

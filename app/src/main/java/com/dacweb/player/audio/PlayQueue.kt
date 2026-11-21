@@ -135,7 +135,14 @@ object PlayQueue {
             .apply {
                 val c = track.cover
                 if (c.isNotBlank()) {
-                    setArtworkUri(if (c.startsWith("http")) c.toUri() else File(c).toUri())
+                    // 网络文件的封面是 NetMeta 落在 cacheDir 的 file:// URI，不能再套一层 File()
+                    setArtworkUri(
+                        when {
+                            c.startsWith("http") || c.startsWith("content:") || c.startsWith("file:") ||
+                                c.startsWith("android.resource:") -> c.toUri()
+                            else -> File(c).toUri()
+                        }
+                    )
                 }
             }
             .build()

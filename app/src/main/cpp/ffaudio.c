@@ -128,7 +128,7 @@ static void ff_free(Ff *f) {
 
 /* ------------------------------------------------------------------ open */
 JNIEXPORT jlong JNICALL
-Java_com_music24_player_audio_FfAudio_nativeOpen(JNIEnv *env, jclass clazz,
+Java_com_dacweb_player_audio_FfAudio_nativeOpen(JNIEnv *env, jclass clazz,
                                                  jstring jpath, jint jfd,
                                                  jint wantRate, jint wantBps) {
     Ff *f = (Ff *) calloc(1, sizeof(Ff));
@@ -248,7 +248,7 @@ Java_com_music24_player_audio_FfAudio_nativeOpen(JNIEnv *env, jclass clazz,
 
 /* [srcRate, srcCh, srcBits, outRate, outCh, outBps, durationMs, (int)isFloat] */
 JNIEXPORT jintArray JNICALL
-Java_com_music24_player_audio_FfAudio_nativeInfo(JNIEnv *env, jclass clazz, jlong h) {
+Java_com_dacweb_player_audio_FfAudio_nativeInfo(JNIEnv *env, jclass clazz, jlong h) {
     Ff *f = (Ff *) (intptr_t) h;
     jint v[8] = {0};
     if (f) {
@@ -268,7 +268,7 @@ Java_com_music24_player_audio_FfAudio_nativeInfo(JNIEnv *env, jclass clazz, jlon
 }
 
 JNIEXPORT jstring JNICALL
-Java_com_music24_player_audio_FfAudio_nativeLastError(JNIEnv *env, jclass clazz, jlong h) {
+Java_com_dacweb_player_audio_FfAudio_nativeLastError(JNIEnv *env, jclass clazz, jlong h) {
     Ff *f = (Ff *) (intptr_t) h;
     return (*env)->NewStringUTF(env, f && f->err[0] ? f->err : "");
 }
@@ -307,7 +307,7 @@ static int push_conv(Ff *f, int samples) {
  * 每次调用最多填满 len，多余数据留在 pend 里等下次取。
  */
 JNIEXPORT jint JNICALL
-Java_com_music24_player_audio_FfAudio_nativeRead(JNIEnv *env, jclass clazz,
+Java_com_dacweb_player_audio_FfAudio_nativeRead(JNIEnv *env, jclass clazz,
                                                  jlong h, jbyteArray jbuf, jint cap) {
     Ff *f = (Ff *) (intptr_t) h;
     if (!f || cap <= 0) return -1;
@@ -382,7 +382,7 @@ Java_com_music24_player_audio_FfAudio_nativeRead(JNIEnv *env, jclass clazz,
  * 返回 0 = 已到目标位置；1 = 读到文件末尾；<0 = 出错。
  */
 JNIEXPORT jint JNICALL
-Java_com_music24_player_audio_FfAudio_nativeSkipTo(JNIEnv *env, jclass clazz,
+Java_com_dacweb_player_audio_FfAudio_nativeSkipTo(JNIEnv *env, jclass clazz,
                                                    jlong h, jlong ms) {
     Ff *f = (Ff *) (intptr_t) h;
     if (!f) return -1;
@@ -428,7 +428,7 @@ Java_com_music24_player_audio_FfAudio_nativeSkipTo(JNIEnv *env, jclass clazz,
 
 /* ------------------------------------------------------------------ seek */
 JNIEXPORT jint JNICALL
-Java_com_music24_player_audio_FfAudio_nativeSeek(JNIEnv *env, jclass clazz,
+Java_com_dacweb_player_audio_FfAudio_nativeSeek(JNIEnv *env, jclass clazz,
                                                  jlong h, jlong ms) {
     Ff *f = (Ff *) (intptr_t) h;
     if (!f) return -1;
@@ -444,7 +444,7 @@ Java_com_music24_player_audio_FfAudio_nativeSeek(JNIEnv *env, jclass clazz,
 }
 
 JNIEXPORT void JNICALL
-Java_com_music24_player_audio_FfAudio_nativeClose(JNIEnv *env, jclass clazz, jlong h) {
+Java_com_dacweb_player_audio_FfAudio_nativeClose(JNIEnv *env, jclass clazz, jlong h) {
     Ff *f = (Ff *) (intptr_t) h;
     if (f) ff_free(f);
 }
@@ -469,8 +469,126 @@ static void tag_close(AVFormatContext **fmt, AVIOContext **pb, int *fd) {
     if (*fd >= 0) { close(*fd); *fd = -1; }
 }
 
+/* ---------------------------------------------------------- 内存头字节探测 */
+/*
+ * 网络文件（SMB/FTP/WebDAV）不方便给 FFmpeg 一个真实路径：调用方先读头部若干字节，
+ * 这里用一块内存当 AVIO，解析出标签 + 音频规格，不建解码器、不读整首歌。
+ * 返回 Object[]{ String[10] 标签, byte[] 封面 或 null, String 封面 MIME 或 null,
+ *                int[6] = {采样率, 位深, 声道, codec_id, 时长ms, 码率kbps} }。
+ */
+typedef struct { const uint8_t *p; int len; int pos; } MemIO;
+
+static int mem_read(void *opaque, uint8_t *buf, int size) {
+    MemIO *m = (MemIO *) opaque;
+    int n = m->len - m->pos;
+    if (n <= 0) return AVERROR_EOF;
+    if (n > size) n = size;
+    memcpy(buf, m->p + m->pos, n);
+    m->pos += n;
+    return n;
+}
+
+static int64_t mem_seek(void *opaque, int64_t off, int whence) {
+    MemIO *m = (MemIO *) opaque;
+    int64_t np;
+    if (whence == AVSEEK_SIZE) return m->len;
+    if (whence == SEEK_SET) np = off;
+    else if (whence == SEEK_CUR) np = m->pos + off;
+    else if (whence == SEEK_END) np = (int64_t) m->len + off;
+    else return -1;
+    if (np < 0 || np > m->len) return -1;
+    m->pos = (int) np;
+    return np;
+}
+
 JNIEXPORT jobjectArray JNICALL
-Java_com_music24_player_audio_FfAudio_nativeTags(JNIEnv *env, jclass clazz,
+Java_com_dacweb_player_audio_FfAudio_nativeProbeMem(JNIEnv *env, jclass clazz, jbyteArray jdata) {
+    jclass strCls = (*env)->FindClass(env, "java/lang/String");
+    jclass objCls = (*env)->FindClass(env, "java/lang/Object");
+    jclass intCls = (*env)->FindClass(env, "[I");
+    jobjectArray tags = (*env)->NewObjectArray(env, 10, strCls, NULL);
+    jobjectArray out = (*env)->NewObjectArray(env, 4, objCls, NULL);
+    if (!tags || !out) return out;
+    (*env)->SetObjectArrayElement(env, out, 0, tags);
+
+    jsize total = (*env)->GetArrayLength(env, jdata);
+    jbyte *bytes = (*env)->GetByteArrayElements(env, jdata, NULL);
+    if (!bytes || total <= 0) goto done;
+
+    MemIO mem = { (const uint8_t *) bytes, (int) total, 0 };
+    uint8_t *iobuf = (uint8_t *) av_malloc(64 * 1024);
+    AVIOContext *pb = avio_alloc_context(iobuf, 64 * 1024, 0, &mem, mem_read, NULL, mem_seek);
+    AVFormatContext *fmt = avformat_alloc_context();
+    if (!pb || !fmt) goto done;
+    fmt->pb = pb;
+    fmt->flags |= AVFMT_FLAG_CUSTOM_IO;
+    int ret = avformat_open_input(&fmt, NULL, NULL, NULL);
+    if (ret < 0) {
+        char buf[128] = {0};
+        av_strerror(ret, buf, sizeof(buf));
+        LOGE("probeMem: open failed %s", buf);
+        goto done;
+    }
+    avformat_find_stream_info(fmt, NULL);
+
+    AVStream *ast = NULL;
+    for (unsigned i = 0; i < fmt->nb_streams; i++) {
+        if (fmt->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) { ast = fmt->streams[i]; break; }
+    }
+    for (int i = 0; i < 10; i++) {
+        const AVDictionaryEntry *e = av_dict_get(fmt->metadata, TAG_KEYS[i], NULL, 0);
+        if ((!e || !e->value) && ast) e = av_dict_get(ast->metadata, TAG_KEYS[i], NULL, 0);
+        if (e && e->value && e->value[0]) {
+            jstring s = (*env)->NewStringUTF(env, e->value);
+            if (s) (*env)->SetObjectArrayElement(env, tags, i, s);
+        }
+    }
+
+    for (unsigned i = 0; i < fmt->nb_streams; i++) {
+        AVStream *st = fmt->streams[i];
+        if (!(st->disposition & AV_DISPOSITION_ATTACHED_PIC)) continue;
+        if (st->attached_pic.size <= 0 || !st->attached_pic.data) continue;
+        jbyteArray arr = (*env)->NewByteArray(env, st->attached_pic.size);
+        if (arr) {
+            (*env)->SetByteArrayRegion(env, arr, 0, st->attached_pic.size,
+                                       (const jbyte *) st->attached_pic.data);
+            (*env)->SetObjectArrayElement(env, out, 1, arr);
+            const char *mime = st->codecpar->codec_id == AV_CODEC_ID_PNG ? "image/png" : "image/jpeg";
+            (*env)->SetObjectArrayElement(env, out, 2, (*env)->NewStringUTF(env, mime));
+        }
+        break;
+    }
+
+    jint info[6] = {0, 0, 0, 0, 0, 0};
+    if (ast) {
+        AVCodecParameters *cp = ast->codecpar;
+        info[0] = cp->sample_rate;
+        info[1] = cp->bits_per_raw_sample > 0 ? cp->bits_per_raw_sample : cp->bits_per_coded_sample;
+        info[2] = cp->ch_layout.nb_channels;
+        info[3] = (jint) cp->codec_id;
+        if (ast->duration > 0) {
+            info[4] = (jint) av_rescale_q(ast->duration, ast->time_base, (AVRational) {1, 1000});
+        }
+        info[5] = (jint) (fmt->bit_rate > 0 ? fmt->bit_rate / 1000 : 0);
+    }
+    jintArray jinfo = (*env)->NewIntArray(env, 6);
+    if (jinfo) {
+        (*env)->SetIntArrayRegion(env, jinfo, 0, 6, info);
+        (*env)->SetObjectArrayElement(env, out, 3, jinfo);
+    }
+
+done:
+    if (bytes) (*env)->ReleaseByteArrayElements(env, jdata, bytes, JNI_ABORT);
+    if (fmt) avformat_close_input(&fmt);
+    if (pb) {
+        if (pb->buffer) av_freep(&pb->buffer);
+        avio_context_free(&pb);
+    }
+    return out;
+}
+
+JNIEXPORT jobjectArray JNICALL
+Java_com_dacweb_player_audio_FfAudio_nativeTags(JNIEnv *env, jclass clazz,
                                                  jstring jpath, jint jfd) {
     jclass strCls = (*env)->FindClass(env, "java/lang/String");
     jclass objCls = (*env)->FindClass(env, "java/lang/Object");

@@ -38,6 +38,9 @@ object LocalLibrary {
         "dts", "mka"               // DTS / Matroska 音频
     )
 
+    /** 供直链播放/网络服务器共用：本播放器支持的音频扩展名。 */
+    val SUPPORTED_EXT: Set<String> get() = AUDIO_EXT
+
     /** 这些扩展名通常不会被 Android 媒体库当成 audio 收录，需要再用 Files 表补扫一次。 */
     private val EXOTIC_EXT = setOf("dsf", "dff", "aif", "aiff", "wma", "asf", "dts", "mka", "ape")
 

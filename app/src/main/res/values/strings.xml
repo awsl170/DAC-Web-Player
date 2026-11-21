@@ -151,6 +151,8 @@
     <string name="local_music">本地音乐</string>
     <string name="local_short">本地</string>
     <string name="local_empty">下载目录里还没有音乐</string>
+    <string name="local_no_match">没有匹配的本地歌曲</string>
+    <string name="local_search_hint">搜索本地歌曲 / 歌手 / 专辑</string>
     <string name="local_count">%1$d 首</string>
     <string name="refresh">刷新</string>
     <string name="add_to_playlist">添加到歌单…</string>
@@ -352,4 +354,35 @@
     <string name="about_ai_body">本应用的代码与文档绝大部分由 AI（Claude / DeepSeek 系列模型）在人类作者的需求与验收下生成，属于人机协作产物。代码风格可能不统一，也可能存在未发现的缺陷，请自行审计后再用于重要场景。</string>
     <string name="dac_sheet_buffer">缓冲</string>
     <string name="dac_sheet_buffer_value">%1$d KB</string>
+
+    <string name="link_source">直链</string>
+    <string name="link_unsupported">不支持的文件类型：%1$s</string>
+    <string name="net_server">网络服务器</string>
+    <string name="net_browse_title">文件服务器</string>
+    <string name="net_close">退出文件浏览</string>
+    <string name="net_connect">连接文件服务器</string>
+    <string name="net_host">地址（IP 或域名）</string>
+    <string name="net_host_required">请填写服务器地址</string>
+    <string name="net_port">端口</string>
+    <string name="net_user">用户名</string>
+    <string name="net_pass">密码</string>
+    <string name="net_path">起始路径（可空）</string>
+    <string name="net_ok">连接</string>
+    <string name="net_cancel">取消</string>
+    <string name="net_loading">读取目录…</string>
+    <string name="net_failed">连接失败：%1$s</string>
+    <string name="net_not_connected">还没有连接服务器</string>
+    <string name="net_parent">返回上级目录</string>
+    <string name="net_folder">文件夹</string>
+    <string name="net_count">%1$d 个音频文件，%2$d 个文件夹</string>
+    <string name="net_pick_title">局域网里的 SMB 服务器</string>
+    <string name="net_manual">手动填写</string>
+    <string name="net_auto">自动搜索服务器</string>
+    <string name="smb_searching">正在搜索局域网里的 SMB 服务器…</string>
+    <string name="smb_none">没搜到服务器，可以手动填写地址</string>
+    <string name="smb_found">找到 %1$d 台，选中后填账号密码</string>
+    <string name="smb_row_sub">%1$s · SMB 445</string>
+    <string name="smb_row_sub_ip">SMB 445 · 局域网</string>
+    <string name="net_auto_connecting">正在用上次的账号登录 %1$s…</string>
+    <string name="net_auto_failed">自动登录失败，请检查账号密码</string>
 </resources>

@@ -21,18 +21,37 @@ class PlaybackService : MediaSessionService() {
 
     private var mediaSession: MediaSession? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    private companion object {
+        /**
+         * 播放缓冲的硬上限：32 MiB。24bit/96k FLAC 约 3 Mbps，32 MiB ≈ 90 秒，
+         * 局域网读一整首的前几十 MB 也就一两秒，够用且给 192 MB 堆留出余量。
+         */
+        const val MAX_BUFFER_BYTES = 32 * 1024 * 1024
+    }
 
     override fun onCreate() {
         super.onCreate()
         // 播放数据先过 SimpleCache：边播边把字节写进磁盘缓存（LRU 1.5GB），
-        // 之后回跳/重播同一首不用再走网络。读缓冲也给大一点。
+        // 之后回跳/重播同一首不用再走网络。
+        //
+        // 缓冲上限原来是「600 秒」——对 24bit/96k FLAC（~3 Mbps）就是 200 MB+，
+        // 而进程堆只有 192 MB：网络快的时候 ExoPlayer 会把缓冲填满直到 OOM
+        // (ExoPlayerImplInternal.maybeContinueLoading)。改成「2 分钟 + 48 MiB」双上限，
+        // 并声明以字节上限优先。
         val loadControl = DefaultLoadControl.Builder()
-            .setBufferDurationsMs(15_000, 600_000, 2_500, 5_000)
+            .setBufferDurationsMs(15_000, 90_000, 2_500, 5_000)
+            .setTargetBufferBytes(MAX_BUFFER_BYTES)
+            .setPrioritizeTimeOverSizeThresholds(false)
             .build()
 
         val player = ExoPlayer.Builder(this)
             .setLoadControl(loadControl)
-            .setMediaSourceFactory(DefaultMediaSourceFactory(MediaCache.switchingFactory(this)))
+            .setMediaSourceFactory(
+                DefaultMediaSourceFactory(
+                    // 最外层：dacnet-smb/ftp/sftp/dav 走网络文件服务器，其余 scheme 原样往下传
+                    com.dacweb.player.net.NetDataSource.Factory(MediaCache.switchingFactory(this))
+                )
+            )
             .setAudioAttributes(
                 AudioAttributes.Builder()
                     .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)

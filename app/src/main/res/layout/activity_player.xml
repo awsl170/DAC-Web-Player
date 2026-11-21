@@ -12,7 +12,7 @@
         android:id="@+id/btnBack"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
+        android:background="@drawable/bg_focus_round"
         android:contentDescription="@string/back"
         android:padding="12dp"
         android:src="@drawable/ic_arrow_back"
@@ -58,16 +58,16 @@
         android:id="@+id/btnDownload"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
+        android:background="@drawable/bg_focus_round"
         android:contentDescription="@string/download"
         android:padding="12dp"
         android:src="@drawable/ic_download"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- 封面 / 歌词 区域：占满顶栏与标题之间的全部空间；封面在其中保持正方形居中，
-         上下多出来的留白只在歌词模式下被利用（歌词铺满整块区域）。 -->
-    <FrameLayout
+    <!-- 封面 / 歌词 区域：竖屏时封面居中、歌词覆盖其上；电视等大屏（>=700dp 宽）时
+         封面在左、歌词在右，由 PlayerActivity.applyWideArt() 切换约束。 -->
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/artArea"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -78,78 +78,82 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/btnBack">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/cover"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_cover_placeholder"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:shapeAppearanceOverlay="@style/CoverShape" />
+
+    <ScrollView
+        android:id="@+id/lyricsScroll"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:fadingEdgeLength="48dp"
+        android:requiresFadingEdge="vertical"
+        android:scrollbars="none"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:id="@+id/lyricBox"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/cover"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:scaleType="centerCrop"
-                android:src="@mipmap/ic_launcher"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintDimensionRatio="1:1"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:shapeAppearanceOverlay="@style/CoverShape" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <ScrollView
-            android:id="@+id/lyricsScroll"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clipToPadding="false"
-            android:fadingEdgeLength="48dp"
-            android:requiresFadingEdge="vertical"
-            android:scrollbars="none"
-            android:visibility="gone">
-
-            <LinearLayout
-                android:id="@+id/lyricBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingVertical="96dp" />
-        </ScrollView>
-
-        <TextView
-            android:id="@+id/lyricEmpty"
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:alpha="0.6"
-            android:text="@string/no_lyrics"
-            android:textSize="13sp"
-            android:visibility="gone" />
+            android:orientation="vertical"
+            android:paddingVertical="96dp" />
+    </ScrollView>
 
-        <ImageButton
-            android:id="@+id/btnLyricSearch"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_gravity="bottom|start"
-            android:layout_margin="10dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/lyric_search"
-            android:padding="8dp"
-            android:src="@drawable/ic_search"
-            android:visibility="gone"
-            app:tint="?attr/colorOnSurfaceVariant" />
+    <TextView
+        android:id="@+id/lyricEmpty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:alpha="0.6"
+        android:text="@string/no_lyrics"
+        android:textSize="13sp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/btnLyrics"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:layout_margin="10dp"
-            android:background="@drawable/bg_chip"
-            android:paddingHorizontal="14dp"
-            android:paddingVertical="6dp"
-            android:text="@string/lyrics"
-            android:textColor="?attr/colorPrimary"
-            android:textSize="12sp" />
-    </FrameLayout>
+    <ImageButton
+        android:id="@+id/btnLyricSearch"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_margin="10dp"
+        android:background="@drawable/bg_focus_round"
+        android:contentDescription="@string/lyric_search"
+        android:padding="8dp"
+        android:src="@drawable/ic_search"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:tint="?attr/colorOnSurfaceVariant" />
+
+    <TextView
+        android:id="@+id/btnLyrics"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:background="@drawable/bg_chip"
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="6dp"
+        android:text="@string/lyrics"
+        android:textColor="?attr/colorPrimary"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <TextView
         android:id="@+id/title"
@@ -241,9 +245,12 @@
     <ImageButton
         android:id="@+id/btnPrev"
         android:layout_width="56dp"
+        android:nextFocusDown="@id/btnShuffle"
+        android:nextFocusRight="@id/btnPlay"
+        android:nextFocusUp="@id/seek"
         android:layout_height="56dp"
         android:layout_marginTop="18dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
+        android:background="@drawable/bg_focus_round"
         android:contentDescription="@string/previous"
         android:padding="12dp"
         android:src="@drawable/ic_skip_previous"
@@ -254,6 +261,10 @@
     <ImageButton
         android:id="@+id/btnPlay"
         android:layout_width="64dp"
+        android:nextFocusDown="@id/btnQueue"
+        android:nextFocusLeft="@id/btnPrev"
+        android:nextFocusRight="@id/btnNext"
+        android:nextFocusUp="@id/seek"
         android:layout_height="64dp"
         android:background="@drawable/bg_play_button"
         android:contentDescription="@string/play"
@@ -268,8 +279,11 @@
     <ImageButton
         android:id="@+id/btnNext"
         android:layout_width="56dp"
+        android:nextFocusDown="@id/btnRepeat"
+        android:nextFocusLeft="@id/btnPlay"
+        android:nextFocusUp="@id/seek"
         android:layout_height="56dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
+        android:background="@drawable/bg_focus_round"
         android:contentDescription="@string/next"
         android:padding="12dp"
         android:src="@drawable/ic_skip_next"
@@ -281,9 +295,11 @@
     <!-- 次要操作：随机 / 播放队列 / 均衡器 / 循环 -->
     <ImageButton
         android:id="@+id/btnShuffle"
+        android:layout_marginBottom="@dimen/player_bottom_margin"
+        android:nextFocusUp="@id/btnPrev"
         android:layout_width="0dp"
         android:layout_height="52dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
+        android:background="@drawable/bg_focus_round"
         android:contentDescription="@string/shuffle_off"
         android:padding="12dp"
         android:src="@drawable/ic_shuffle"
@@ -296,9 +312,11 @@
 
     <ImageButton
         android:id="@+id/btnQueue"
+        android:layout_marginBottom="@dimen/player_bottom_margin"
+        android:nextFocusUp="@id/btnPlay"
         android:layout_width="0dp"
         android:layout_height="52dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
+        android:background="@drawable/bg_focus_round"
         android:contentDescription="@string/play_queue"
         android:padding="12dp"
         android:src="@drawable/ic_queue"
@@ -311,9 +329,11 @@
 
     <ImageButton
         android:id="@+id/btnEq"
+        android:layout_marginBottom="@dimen/player_bottom_margin"
+        android:nextFocusUp="@id/btnPlay"
         android:layout_width="0dp"
         android:layout_height="52dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
+        android:background="@drawable/bg_focus_round"
         android:contentDescription="@string/equalizer"
         android:padding="12dp"
         android:src="@drawable/ic_equalizer"
@@ -326,9 +346,11 @@
 
     <ImageButton
         android:id="@+id/btnRepeat"
+        android:layout_marginBottom="@dimen/player_bottom_margin"
+        android:nextFocusUp="@id/btnNext"
         android:layout_width="0dp"
         android:layout_height="52dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
+        android:background="@drawable/bg_focus_round"
         android:contentDescription="@string/repeat_off"
         android:padding="12dp"
         android:src="@drawable/ic_repeat"

@@ -100,14 +100,11 @@ class TrackAdapter(
                 if (badge.isNotBlank()) " · $badge" else ""
             )
         // 曲目自带封面（本地文件是 file://，在线曲目由插件补全或搜索接口下发）
-        val cover = t.cover.takeIf { it.isNotBlank() }
-        if (cover.isNullOrBlank()) {
-            b.cover.setImageResource(android.R.drawable.ic_media_play)
-        } else {
-            b.cover.load(cover) {
-                crossfade(true)
-                placeholder(android.R.drawable.ic_media_play)
-            }
+        // 一律走 Coil：setImageResource 不会取消上一行的异步请求，回收后会串图
+        val cover: Any = t.cover.takeIf { it.isNotBlank() } ?: android.R.drawable.ic_media_play
+        b.cover.load(cover) {
+            crossfade(true)
+            placeholder(android.R.drawable.ic_media_play)
         }
         b.check.visibility = if (selectionMode) View.VISIBLE else View.GONE
         b.check.isChecked = selected.contains(t.id)

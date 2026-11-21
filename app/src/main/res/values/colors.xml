@@ -33,4 +33,8 @@
     <color name="palette_red_on">#FFFFFF</color>
     <color name="palette_red_container">#FFDAD6</color>
     <color name="palette_red_on_container">#410E0B</color>
+    <!-- 遥控器/键盘焦点：半透明主色底 + 描边（电视上没有触摸反馈，必须能看出焦点在哪） -->
+    <color name="focus_bg">#336750A4</color>
+    <color name="focus_press">#556750A4</color>
+    <color name="focus_fill">#EADDFF</color>
 </resources>

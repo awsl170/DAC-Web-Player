@@ -15,6 +15,7 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.widget.doAfterTextChanged
@@ -62,6 +63,9 @@ class MainActivity : BaseActivity() {
     private lateinit var adapter: TrackAdapter
     private lateinit var playlistAdapter: PlaylistAdapter
     private lateinit var localAdapter: TrackAdapter
+
+    /** 本地页当前的过滤关键词（空串表示不过滤）。 */
+    private var localQuery = ""
     private var localJob: Job? = null
     private var page = 0
     private var endReached = false
@@ -121,9 +125,34 @@ class MainActivity : BaseActivity() {
         localAdapter = TrackAdapter(::onLocalClick, ::onLocalLongClick)
         b.locals.layoutManager = LinearLayoutManager(this)
         b.locals.adapter = localAdapter
+        b.localSearchInput.doAfterTextChanged { t ->
+            localQuery = t?.toString()?.trim().orEmpty()
+            b.clearLocalSearch.visibility = if (localQuery.isEmpty()) View.GONE else View.VISIBLE
+            renderLocal()
+        }
+        b.clearLocalSearch.setOnClickListener { b.localSearchInput.setText("") }
+        b.localSearchInput.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                currentFocus?.clearFocus()
+                true
+            } else false
+        }
 
         b.newPlaylistBtn.setOnClickListener { newPlaylistDialog() }
         b.refreshLocal.setOnClickListener { refreshLocal(true) }
+        // 电视遥控器：搜索结果里按「返回」先把焦点交还底部三个 tab（否则一路按下去就退出了应用），
+        // 焦点已经在底部 tab 上时再按返回才真的退出。
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (b.pageSearch.visibility == View.VISIBLE && !isInBottomNav(currentFocus)) {
+                    focusBottomTab()
+                } else {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                }
+            }
+        })
+
         b.tabSearch.setOnClickListener { showPage(0) }
         b.tabPlaylist.setOnClickListener { showPage(1); refreshPlaylists() }
         b.tabLocal.setOnClickListener { showPage(2); refreshLocal(false) }
@@ -141,6 +170,24 @@ class MainActivity : BaseActivity() {
         }
         b.clearSearch.setOnClickListener { b.searchInput.setText("") }
 
+        b.netBtn.setOnClickListener {
+            com.dacweb.player.net.ServerPickDialog.show(
+                this,
+                onPick = { host -> connectDiscovered(host) },
+                onLongPick = { host ->
+                    // 长按：即使连过也重新问一次账号密码
+                    com.dacweb.player.net.ServerDialog.show(this, presetHost = host, presetType = "smb") { server ->
+                        openNetBrowser(server)
+                    }
+                },
+                onManual = {
+                com.dacweb.player.net.ServerDialog.show(this) { server -> openNetBrowser(server) }
+            })
+        }
+        b.netBtn.setOnLongClickListener {
+            com.dacweb.player.net.ServerDialog.show(this) { server -> openNetBrowser(server) }
+            true
+        }
         b.qualityBtn.setOnClickListener { showQualityDialog() }
         b.settingsBtn.setOnClickListener { startActivity(Intent(this, SettingsActivity::class.java)) }
         b.queueBtn.setOnClickListener { showQueueDialog() }
@@ -222,6 +269,26 @@ class MainActivity : BaseActivity() {
         tintTab(b.tabSearchIcon, b.tabSearchLabel, index == 0)
         tintTab(b.tabPlaylistIcon, b.tabPlaylistLabel, index == 1)
         tintTab(b.tabLocalIcon, b.tabLocalLabel, index == 2)
+    }
+
+    /** 当前控件是否在底部三个 tab 里面 */
+    private fun isInBottomNav(v: View?): Boolean {
+        var p: View? = v
+        while (p != null) {
+            if (p.id == R.id.bottomNav) return true
+            p = p.parent as? View
+        }
+        return false
+    }
+
+    /** 把焦点交回当前页面对应的底部 tab */
+    private fun focusBottomTab() {
+        val v: View = when {
+            b.pageLocal.visibility == View.VISIBLE -> b.tabLocal
+            b.pagePlaylist.visibility == View.VISIBLE -> b.tabPlaylist
+            else -> b.tabSearch
+        }
+        if (v.isInTouchMode) v.requestFocusFromTouch() else v.requestFocus()
     }
 
     private fun tintTab(icon: android.widget.ImageView, label: android.widget.TextView, active: Boolean) {
@@ -364,10 +431,27 @@ class MainActivity : BaseActivity() {
     }
 
     private fun renderLocal() {
-        val tracks = LocalLibrary.cachedTracks()
+        val all = LocalLibrary.cachedTracks()
+        val tracks = filterLocal(all, localQuery)
         localAdapter.submit(tracks)
-        b.localInfo.text = getString(R.string.local_count, tracks.size)
+        b.localInfo.text = if (localQuery.isEmpty()) {
+            getString(R.string.local_count, tracks.size)
+        } else {
+            getString(R.string.local_count, tracks.size) + " / " + getString(R.string.local_count, all.size)
+        }
+        b.localEmpty.text = getString(if (localQuery.isEmpty()) R.string.local_empty else R.string.local_no_match)
         b.localEmpty.visibility = if (tracks.isEmpty()) View.VISIBLE else View.GONE
+    }
+
+    /** 本地过滤：曲名/歌手/专辑任一包含关键词即命中（不区分大小写）。 */
+    private fun filterLocal(list: List<Track>, q: String): List<Track> {
+        if (q.isBlank()) return list
+        val k = q.lowercase()
+        return list.filter {
+            it.name.lowercase().contains(k) ||
+                it.artist.lowercase().contains(k) ||
+                it.album.lowercase().contains(k)
+        }
     }
 
     private fun confirmDeleteLocal(track: Track) {
@@ -435,9 +519,52 @@ class MainActivity : BaseActivity() {
         sheet.show()
     }
 
+    /**
+     * 自动发现列表里选中一台服务器：这台以前连成功过就直接登录（电视上用遥控器敲账号密码太痛苦），
+     * 没连过、或者这次登录报错，才弹出账号密码框。
+     */
+    private fun connectDiscovered(host: String) {
+        val known = com.dacweb.player.net.NetStore.knownFor(this, host)
+        if (known == null) {
+            com.dacweb.player.net.ServerDialog.show(this, presetHost = host, presetType = "smb") { server ->
+                openNetBrowser(server)
+            }
+            return
+        }
+        Toast.makeText(this, getString(R.string.net_auto_connecting, known.label), Toast.LENGTH_SHORT).show()
+        lifecycleScope.launch {
+            val ok = withContext(Dispatchers.IO) {
+                runCatching {
+                    com.dacweb.player.net.NetStore.connect(this@MainActivity, known).list(known.startPath)
+                }.isSuccess
+            }
+            if (ok) {
+                openNetBrowser(known)
+            } else {
+                Toast.makeText(this@MainActivity, R.string.net_auto_failed, Toast.LENGTH_SHORT).show()
+                com.dacweb.player.net.ServerDialog.show(
+                    this@MainActivity, presetHost = host, presetType = known.type
+                ) { server -> openNetBrowser(server) }
+            }
+        }
+    }
+
+    private fun openNetBrowser(server: com.dacweb.player.net.NetServer) {
+        startActivity(
+            android.content.Intent(this, com.dacweb.player.net.NetBrowserActivity::class.java)
+                .putExtra(com.dacweb.player.net.NetBrowserActivity.EXTRA_PATH, server.startPath)
+        )
+    }
+
     override fun onResume() {
         super.onResume()
         refreshPlaylists()
+        // 电视上没有触摸，进来必须先把焦点落在某个可操作控件上，方向键才有反应
+        if (currentFocus == null) {
+            val v: android.view.View = b.tabSearch
+            // 触摸模式下 requestFocus() 会被忽略，用 requestFocusFromTouch 才能让外接遥控/键盘接管
+            if (v.isInTouchMode) v.requestFocusFromTouch() else v.requestFocus()
+        }
     }
 
     private fun updateQualityLabel() {
@@ -698,11 +825,78 @@ class MainActivity : BaseActivity() {
             .filter { it.isNotBlank() }.joinToString(" · ")
         b.miniCover.load(md.artworkUri)
         b.miniPlay.setImageResource(if (c.isPlaying) R.drawable.ic_pause else R.drawable.ic_play)
+        applyNetTagsMini(item)
+    }
+
+    /**
+     * 搜索框里输入的是 http(s) 音频直链时直接播放（不消耗音源额度）。
+     * 后缀从 URL 的路径部分取（忽略 ?query 和 #fragment）。
+     */
+    /** 网络文件（dacnet-*）切歌后补标签：列表只有文件名，读到头再显示。 */
+    private fun applyNetTagsMini(item: androidx.media3.common.MediaItem) {
+        val uri = item.localConfiguration?.uri ?: return
+        if (uri.scheme?.startsWith("dacnet-") != true) return
+        val id = item.mediaId
+        lifecycleScope.launch {
+            val m = withContext(Dispatchers.IO) {
+                com.dacweb.player.net.NetMeta.probe(this@MainActivity, uri)
+            } ?: return@launch
+            if (PlayerHub.controller?.currentMediaItem?.mediaId != id) return@launch
+            if (m.title.isNotBlank()) b.miniTitle.text = m.title
+            if (m.artist.isNotBlank()) {
+                val q = PlayerHub.controller?.currentMediaItem?.mediaMetadata?.extras
+                    ?.getString(PlayQueue.EXTRA_QUALITY)
+                val fmt = PlayerHub.controller?.currentMediaItem?.mediaMetadata?.extras
+                    ?.getString(PlayQueue.EXTRA_FORMAT)
+                val extra = listOfNotNull(q, fmt).filter { it.isNotBlank() }.joinToString(" · ")
+                b.miniArtist.text = listOf(m.artist, extra).filter { it.isNotBlank() }.joinToString(" · ")
+            }
+            m.cover?.let { b.miniCover.load("file://${it.absolutePath}") }
+        }
+    }
+
+    private fun playDirectLink(url: String) {
+        val path = url.substringBefore('#').substringBefore('?')
+        val ext = path.substringAfterLast('.', "").lowercase()
+        if (ext !in LocalLibrary.SUPPORTED_EXT) {
+            toast(getString(R.string.link_unsupported, if (ext.isEmpty()) "?" else ext))
+            return
+        }
+        val fileName = android.net.Uri.decode(path.substringAfterLast('/'))
+        val name = fileName.removeSuffix(".$ext").ifBlank { fileName }.ifBlank { url }
+        val track = Track(
+            id = "url:" + url,
+            name = name,
+            artist = getString(R.string.link_source),
+            album = "",
+            cover = "",
+            localUri = url   // 走"本地文件"通道，ExoPlayer/直通都能直接读 http(s)
+        )
+        PlayQueue.set(listOf(track), 0)
+        PlayerHub.connect(this) { c ->
+            lifecycleScope.launch {
+                runCatching { PlayQueue.playCurrent(this@MainActivity, c) }
+                    .onFailure { toast(getString(R.string.play_failed, it.message.orEmpty())) }
+            }
+        }
+        b.clearSearch.visibility = View.VISIBLE
+        hideKeyboardNow()
+    }
+
+    private fun hideKeyboardNow() {
+        val imm = getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as? android.view.inputmethod.InputMethodManager
+        imm?.hideSoftInputFromWindow(b.searchInput.windowToken, 0)
+        currentFocus?.clearFocus()
     }
 
     private fun doSearch() {
         val kw = b.searchInput.text.toString().trim()
         if (kw.isEmpty() || searching) return
+        // 直接贴一个音频直链：不搜了，直接播
+        if (kw.startsWith("http://") || kw.startsWith("https://")) {
+            playDirectLink(kw)
+            return
+        }
         // 换了关键词就把上一轮的临时缓冲清掉（用户要求：重新搜索时清缓冲）
         if (kw != query && com.dacweb.player.audio.PlayerHub.controller?.isPlaying != true) {
             // 正在播的时候不能动缓存：SimpleCache 被 release 会直接打断播放

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 电视/大屏：避开过扫描（一般 5%~10%），同时保持靠近底部的视觉位置 -->
+    <dimen name="player_bottom_margin">40dp</dimen>
+</resources>

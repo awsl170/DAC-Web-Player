@@ -1,14 +1,14 @@
-prefix=/run/media/pangna/新加卷/库/音乐播放器/MusicPlayer/app/src/main/cpp/ffmpeg/armeabi-v7a
+prefix=/run/media/pangna/新加卷/库/音乐播放器/MusicPlayer/prebuilt/ffmpeg/armeabi-v7a
 exec_prefix=${prefix}
-libdir=/run/media/pangna/新加卷/库/音乐播放器/MusicPlayer/app/src/main/cpp/ffmpeg/armeabi-v7a/lib
-includedir=/run/media/pangna/新加卷/库/音乐播放器/MusicPlayer/app/src/main/cpp/ffmpeg/armeabi-v7a/include
+libdir=/run/media/pangna/新加卷/库/音乐播放器/MusicPlayer/prebuilt/ffmpeg/armeabi-v7a/lib
+includedir=/run/media/pangna/新加卷/库/音乐播放器/MusicPlayer/prebuilt/ffmpeg/armeabi-v7a/include
 
 Name: libavutil
 Description: FFmpeg utility library
-Version: 59.39.100
+Version: 61.1.100
 Requires: 
 Requires.private: 
 Conflicts:
 Libs: -L${libdir}  -lavutil 
-Libs.private: -pthread -lm -latomic -landroid -lmediandk
+Libs.private: -lm -lz -latomic -landroid -lmediandk -pthread
 Cflags: -I${includedir}

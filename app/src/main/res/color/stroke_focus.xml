@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MaterialCardView 的描边：获得焦点时变主色（卡片背景色表达不了焦点，只能靠描边） -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true" android:color="@color/palette_purple" />
+    <item android:color="@android:color/transparent" />
+</selector>

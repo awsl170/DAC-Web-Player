@@ -1,12 +1,12 @@
 package com.dacweb.player.ui
 
+import android.app.Dialog
 import android.content.Context
 import android.view.Gravity
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.ScrollView
 import android.widget.TextView
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.dacweb.player.R
 import com.dacweb.player.plugin.Providers
 import kotlinx.coroutines.CoroutineScope
@@ -25,7 +25,7 @@ class LyricsSearchSheet(
     private val artist: String,
     private val durationMs: Long,
     private val onPick: (String, String) -> Unit
-) : BottomSheetDialog(ctx) {
+) : Dialog(ctx) {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private lateinit var list: LinearLayout
@@ -48,7 +48,14 @@ class LyricsSearchSheet(
             (ctx.resources.displayMetrics.heightPixels * 0.55).toInt()
         )
         root.addView(scroll, params)
+        root.setBackgroundResource(R.drawable.bg_dialog)
         setContentView(root)
+        window?.apply {
+            setBackgroundDrawableResource(android.R.color.transparent)
+            setGravity(Gravity.CENTER)
+            val dm = ctx.resources.displayMetrics
+            setLayout((minOf(dm.widthPixels * 0.72f, 620 * dp(1).toFloat())).toInt(), android.view.WindowManager.LayoutParams.WRAP_CONTENT)
+        }
         load()
     }
 

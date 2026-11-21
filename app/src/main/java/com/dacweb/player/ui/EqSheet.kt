@@ -1,16 +1,17 @@
 package com.dacweb.player.ui
 
+import android.app.Dialog
 import android.content.Context
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.LinearLayout
 import android.widget.SeekBar
 import android.widget.Spinner
 import android.widget.TextView
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.dacweb.player.R
 import com.dacweb.player.audio.Eq
@@ -19,7 +20,7 @@ import com.dacweb.player.audio.Eq
  * 均衡器面板：开关 / 预设 / 5 段增益 / 低音增强 / 环绕。
  * 参数直接写入 [Eq]，由系统 audiofx 作用到 ExoPlayer 的音频会话上。
  */
-class EqSheet(context: Context) : BottomSheetDialog(context) {
+class EqSheet(context: Context) : Dialog(context) {
 
     private val density = context.resources.displayMetrics.density
     private val bandBars = mutableListOf<SeekBar>()
@@ -29,6 +30,7 @@ class EqSheet(context: Context) : BottomSheetDialog(context) {
         val root = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(pad, pad, pad, pad)
+            setBackgroundResource(R.drawable.bg_dialog)
         }
 
         root.addView(TextView(context).apply {
@@ -43,8 +45,33 @@ class EqSheet(context: Context) : BottomSheetDialog(context) {
                 setPadding(0, pad / 2, 0, pad / 2)
             })
             setContentView(root)
+            focusRings(root)
+            setupWindow()
         } else {
             buildPanel(context, root, pad)
+            setContentView(root)
+            focusRings(root)
+            setupWindow()
+        }
+    }
+
+    /** 电视上每个可聚焦控件都要有自己的焦点框，否则看不出选中了哪一个 */
+    private fun focusRings(root: android.view.ViewGroup) {
+        for (i in 0 until root.childCount) {
+            val c = root.getChildAt(i)
+            if (c is android.widget.Spinner) continue
+            if (c is android.widget.LinearLayout) { focusRings(c); continue }
+            if (c.isFocusable) c.setBackgroundResource(R.drawable.bg_focus_round)
+        }
+    }
+
+    /** 与播放队列一致：居中窗口，遥控器好操作 */
+    private fun setupWindow() {
+        val dm = context.resources.displayMetrics
+        window?.apply {
+            setBackgroundDrawableResource(android.R.color.transparent)
+            setGravity(Gravity.CENTER)
+            setLayout((minOf(dm.widthPixels * 0.72f, 620 * density)).toInt(), WindowManager.LayoutParams.WRAP_CONTENT)
         }
     }
 

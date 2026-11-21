@@ -252,7 +252,7 @@ static void cleanup(void) {
 }
 
 JNIEXPORT void JNICALL
-Java_com_music24_player_usb_UacIso_nativeSetGain(JNIEnv *env, jobject thiz, jfloat gain) {
+Java_com_dacweb_player_usb_UacIso_nativeSetGain(JNIEnv *env, jobject thiz, jfloat gain) {
     (void) env; (void) thiz;
     if (gain < 0.0f) gain = 0.0f;
     if (gain > 1.0f) gain = 1.0f;
@@ -371,7 +371,7 @@ static int start_engine(jint fd, jint iface, jint alt, jint ep,
 }
 
 JNIEXPORT jint JNICALL
-Java_com_music24_player_usb_UacIso_nativeStart(JNIEnv *env, jobject thiz,
+Java_com_dacweb_player_usb_UacIso_nativeStart(JNIEnv *env, jobject thiz,
                                                jint fd, jint iface, jint alt, jint ep,
                                                jint rate, jint channels, jint bps,
                                                jint packets, jint max_packet) {
@@ -380,7 +380,7 @@ Java_com_music24_player_usb_UacIso_nativeStart(JNIEnv *env, jobject thiz,
 }
 
 JNIEXPORT jint JNICALL
-Java_com_music24_player_usb_UacIso_nativeStreamStart(JNIEnv *env, jobject thiz,
+Java_com_dacweb_player_usb_UacIso_nativeStreamStart(JNIEnv *env, jobject thiz,
                                                      jint fd, jint iface, jint alt, jint ep,
                                                      jint rate, jint channels, jint bps,
                                                      jint packets, jint max_packet) {
@@ -390,7 +390,7 @@ Java_com_music24_player_usb_UacIso_nativeStreamStart(JNIEnv *env, jobject thiz,
 
 // 把解码出的 PCM 写进环形缓冲；缓冲满时阻塞（2 ms 轮询），返回实际写入字节数。
 JNIEXPORT jint JNICALL
-Java_com_music24_player_usb_UacIso_nativeWrite(JNIEnv *env, jobject thiz,
+Java_com_dacweb_player_usb_UacIso_nativeWrite(JNIEnv *env, jobject thiz,
                                                jbyteArray data, jint length) {
     (void) thiz;
     if (!g_running || g_mode != 1 || g_rb == NULL || length <= 0) return -1;
@@ -414,19 +414,19 @@ Java_com_music24_player_usb_UacIso_nativeWrite(JNIEnv *env, jobject thiz,
 }
 
 JNIEXPORT void JNICALL
-Java_com_music24_player_usb_UacIso_nativeSetPaused(JNIEnv *env, jobject thiz, jboolean paused) {
+Java_com_dacweb_player_usb_UacIso_nativeSetPaused(JNIEnv *env, jobject thiz, jboolean paused) {
     (void) env; (void) thiz;
     g_paused = paused ? 1 : 0;
 }
 
 JNIEXPORT jlong JNICALL
-Java_com_music24_player_usb_UacIso_nativeFrames(JNIEnv *env, jobject thiz) {
+Java_com_dacweb_player_usb_UacIso_nativeFrames(JNIEnv *env, jobject thiz) {
     (void) env; (void) thiz;
     return (jlong) g_frames_out;
 }
 
 JNIEXPORT void JNICALL
-Java_com_music24_player_usb_UacIso_nativeSetBuffer(JNIEnv *env, jobject thiz, jint kb) {
+Java_com_dacweb_player_usb_UacIso_nativeSetBuffer(JNIEnv *env, jobject thiz, jint kb) {
     (void) env; (void) thiz;
     if (kb < 64) kb = 64;
     if (kb > 16384) kb = 16384;
@@ -434,7 +434,7 @@ Java_com_music24_player_usb_UacIso_nativeSetBuffer(JNIEnv *env, jobject thiz, ji
 }
 
 JNIEXPORT void JNICALL
-Java_com_music24_player_usb_UacIso_nativeSetUrbs(JNIEnv *env, jobject thiz, jint n) {
+Java_com_dacweb_player_usb_UacIso_nativeSetUrbs(JNIEnv *env, jobject thiz, jint n) {
     (void) env; (void) thiz;
     if (n < 4) n = 4;
     if (n > 128) n = 128;
@@ -442,19 +442,19 @@ Java_com_music24_player_usb_UacIso_nativeSetUrbs(JNIEnv *env, jobject thiz, jint
 }
 
 JNIEXPORT jint JNICALL
-Java_com_music24_player_usb_UacIso_nativeCapacity(JNIEnv *env, jobject thiz) {
+Java_com_dacweb_player_usb_UacIso_nativeCapacity(JNIEnv *env, jobject thiz) {
     (void) env; (void) thiz;
     return (jint) g_rb_cap;
 }
 
 JNIEXPORT jint JNICALL
-Java_com_music24_player_usb_UacIso_nativeUnderruns(JNIEnv *env, jobject thiz) {
+Java_com_dacweb_player_usb_UacIso_nativeUnderruns(JNIEnv *env, jobject thiz) {
     (void) env; (void) thiz;
     return g_underruns;
 }
 
 JNIEXPORT jint JNICALL
-Java_com_music24_player_usb_UacIso_nativeBuffered(JNIEnv *env, jobject thiz) {
+Java_com_dacweb_player_usb_UacIso_nativeBuffered(JNIEnv *env, jobject thiz) {
     (void) env; (void) thiz;
     pthread_mutex_lock(&g_rb_lock);
     size_t used = g_rb_cap ? rb_used() : 0;
@@ -463,7 +463,7 @@ Java_com_music24_player_usb_UacIso_nativeBuffered(JNIEnv *env, jobject thiz) {
 }
 
 JNIEXPORT void JNICALL
-Java_com_music24_player_usb_UacIso_nativeStop(JNIEnv *env, jobject thiz) {
+Java_com_dacweb_player_usb_UacIso_nativeStop(JNIEnv *env, jobject thiz) {
     (void) env; (void) thiz;
     pthread_mutex_lock(&g_life);
     stop_engine_locked();
@@ -492,7 +492,7 @@ static void stop_engine_locked(void) {
 }
 
 JNIEXPORT jintArray JNICALL
-Java_com_music24_player_usb_UacIso_nativeStats(JNIEnv *env, jobject thiz) {
+Java_com_dacweb_player_usb_UacIso_nativeStats(JNIEnv *env, jobject thiz) {
     (void) thiz;
     jintArray arr = (*env)->NewIntArray(env, 3);
     if (!arr) return NULL;
@@ -502,7 +502,7 @@ Java_com_music24_player_usb_UacIso_nativeStats(JNIEnv *env, jobject thiz) {
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_music24_player_usb_UacIso_nativeRunning(JNIEnv *env, jobject thiz) {
+Java_com_dacweb_player_usb_UacIso_nativeRunning(JNIEnv *env, jobject thiz) {
     (void) env; (void) thiz;
     return g_running ? JNI_TRUE : JNI_FALSE;
 }

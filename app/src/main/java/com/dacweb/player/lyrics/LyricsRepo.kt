@@ -96,7 +96,7 @@ object LyricsRepo {
     ): List<LyricLine> = withContext(Dispatchers.IO) {
         if (!localUri.isNullOrBlank()) {
             val uri = Uri.parse(localUri)
-            if (uri.scheme == "content" || uri.scheme == "file") {
+            if (uri.scheme == "content" || uri.scheme == "file" || uri.scheme?.startsWith("dacnet-") == true) {
                 val local = runCatching { LocalLyrics.read(ctx, uri) }.getOrNull()
                 if (!local.isNullOrBlank()) return@withContext Lrc.parse(local)
             }

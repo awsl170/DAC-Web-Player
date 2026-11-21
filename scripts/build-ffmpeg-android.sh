@@ -3,6 +3,8 @@
 # 在 Ubuntu 上交叉编译 FFmpeg（Android 用），产物写到工程里供 App 链接。
 #
 # 用法：  bash build-ffmpeg-android.sh
+#        FFMPEG_VER=7.1 bash build-ffmpeg-android.sh     # 指定版本（默认 9.0）
+#        ABIS="arm64-v8a" bash build-ffmpeg-android.sh   # 只编一个 ABI（先试水用）
 #        （首次会下载 NDK ~600MB、FFmpeg ~11MB，缓存在 ~/.cache/dac-ffmpeg）
 #
 # 产物：  /e/库/音乐播放器/MusicPlayer/prebuilt/ffmpeg/<abi>/{include,lib}
@@ -16,12 +18,13 @@
 set -euo pipefail
 
 NDK_VER="r27c"
-FFMPEG_VER="7.1"
+FFMPEG_VER="${FFMPEG_VER:-9.0}"   # 想回到旧版：FFMPEG_VER=7.1 bash build-ffmpeg-android.sh
 API=22                       # 与 app/build.gradle 的 minSdk 22 对齐（5.1 也能加载）
 ABIS=${ABIS:-"arm64-v8a armeabi-v7a x86_64"}
 
 # 工程里放 prebuilt 的位置（NTFS 挂载点，脚本会自动探测）
 PROJ_GUESS=(
+  "/run/media/pangna/新加卷/库/音乐播放器/MusicPlayer"
   "/e/库/音乐播放器/MusicPlayer"
   "/mnt/e/库/音乐播放器/MusicPlayer"
   "/media/$USER/E/库/音乐播放器/MusicPlayer"
@@ -77,7 +80,7 @@ COMMON_FLAGS=(
   --enable-cross-compile
   --enable-shared --disable-static
   --disable-programs --disable-doc --disable-debug
-  --disable-avdevice --disable-postproc --disable-avfilter --disable-swscale
+  --disable-avdevice --disable-avfilter --disable-swscale
   --enable-swresample
   --enable-small
   --disable-everything

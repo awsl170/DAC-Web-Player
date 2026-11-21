@@ -1,13 +1,13 @@
-prefix=/run/media/pangna/新加卷/库/音乐播放器/MusicPlayer/app/src/main/cpp/ffmpeg/armeabi-v7a
+prefix=/run/media/pangna/新加卷/库/音乐播放器/MusicPlayer/prebuilt/ffmpeg/armeabi-v7a
 exec_prefix=${prefix}
-libdir=/run/media/pangna/新加卷/库/音乐播放器/MusicPlayer/app/src/main/cpp/ffmpeg/armeabi-v7a/lib
-includedir=/run/media/pangna/新加卷/库/音乐播放器/MusicPlayer/app/src/main/cpp/ffmpeg/armeabi-v7a/include
+libdir=/run/media/pangna/新加卷/库/音乐播放器/MusicPlayer/prebuilt/ffmpeg/armeabi-v7a/lib
+includedir=/run/media/pangna/新加卷/库/音乐播放器/MusicPlayer/prebuilt/ffmpeg/armeabi-v7a/include
 
 Name: libavformat
 Description: FFmpeg container format library
-Version: 61.7.100
+Version: 63.1.100
 Requires: 
-Requires.private: libavcodec >= 61.19.100, libswresample >= 5.3.100, libavutil >= 59.39.100
+Requires.private: libavcodec >= 63.1.100, libswresample >= 7.1.100, libavutil >= 61.1.100
 Conflicts:
 Libs: -L${libdir}  -lavformat 
 Libs.private: -lm -latomic -lz

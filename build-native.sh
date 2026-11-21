@@ -30,6 +30,8 @@ cd "$WORK"
 
 for abi in arm64-v8a armeabi-v7a x86_64; do
   mkdir -p "$PROJ/app/src/main/jniLibs/$abi"
+  # 先清空：FFmpeg 库改过名（libav* -> libdacav*），旧文件留着会被一起打进 APK
+  rm -f "$PROJ/app/src/main/jniLibs/$abi/"*.so
   # ndk-build 会把 libuaciso.so、libffaudio.so 和 4 个 libav*.so 都放进 libs/<abi>
   cp "$WORK/libs/$abi/"*.so "$PROJ/app/src/main/jniLibs/$abi/"
   echo "installed $abi: $(ls "$PROJ/app/src/main/jniLibs/$abi" | tr '\n' ' ')"
