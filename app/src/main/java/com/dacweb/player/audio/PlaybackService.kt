@@ -116,6 +116,9 @@ class PlaybackService : MediaSessionService() {
             release()
         }
         mediaSession = null
+        // 用户退出应用（服务销毁）就清掉音频缓存：缓存只为"这次听的时候回跳/重播"服务，
+        // 不该在设备上长期留几十上百 MB。
+        runCatching { MediaCache.purge(this) }
         super.onDestroy()
     }
 }

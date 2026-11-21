@@ -257,6 +257,8 @@
     <string name="about_theme">当前外观</string>
     <string name="about_changelog">更新日志</string>
     <string name="about_changelog_empty">（没有更新日志）</string>
+    <string name="about_changelog_note">各版本的主要变化，按版本从新到旧排列。</string>
+    <string name="about_open_changelog">查看完整更新日志 ›</string>
     <string name="about_third_party">第三方组件</string>
     <string name="about_third_party_note">下列组件均按其原始许可证使用；点击任意一项可查看许可证要点并复制官方链接。</string>
     <string name="about_license">开源协议</string>

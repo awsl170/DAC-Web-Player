@@ -141,6 +141,26 @@ for abi in $ABIS; do
   esac
 done
 
+# 头文件三个 ABI 完全一致：只保留一份 prebuilt/ffmpeg/include，
+# 其余 ABI 的 include 删掉（否则仓库里有三份相同头文件，既占空间，
+# 也会让 SonarQube 的重复率被算成 70%+）。
+FIRST=""
+for abi in $ABIS; do
+  if [ -d "$OUT_ROOT/$abi/include" ]; then
+    if [ -z "$FIRST" ]; then
+      FIRST="$OUT_ROOT/$abi/include"
+    fi
+  fi
+done
+if [ -n "$FIRST" ] && [ ! -d "$OUT_ROOT/include" ]; then
+  cp -r "$FIRST" "$OUT_ROOT/include"
+  for abi in $ABIS; do
+    [ "$OUT_ROOT/$abi/include" = "$FIRST" ] || rm -rf "$OUT_ROOT/$abi/include"
+  done
+  rm -rf "$FIRST"
+  echo "   ✅ 头文件已合并为 $OUT_ROOT/include（三个 ABI 共用）"
+fi
+
 echo
 echo "全部完成。产物："
 find "$OUT_ROOT" -name '*.so' -printf '  %p  %s bytes\n' 2>/dev/null | sort

@@ -170,6 +170,27 @@ object MediaCache {
     fun sizeBytes(ctx: Context): Long = dirSize(File(ctx.applicationContext.cacheDir, DIR))
 
     /**
+     * 彻底清空并释放：播放服务销毁（用户退出应用）时调用。
+     *
+     * 与 [clear] 的区别是这里可以放心 release + 删目录——此时 ExoPlayer 已经释放，
+     * 不会再有 CacheDataSource 持有这个实例（那样会 ERROR_CODE_IO_UNSPECIFIED）。
+     * 下次播放会重新创建一个空缓存。
+     */
+    fun purge(ctx: Context) {
+        val app = ctx.applicationContext
+        synchronized(this) {
+            runCatching {
+                simple?.keys?.toList()?.forEach { key -> runCatching { simple?.removeResource(key) } }
+            }
+            runCatching { simple?.release() }
+            simple = null
+            runCatching { database?.close() }
+            database = null
+        }
+        runCatching { File(app.cacheDir, DIR).deleteRecursively() }
+    }
+
+    /**
      * 清空缓存内容，但**不释放** SimpleCache 实例。
      *
      * 之前这里 release() 之后还顺手删目录，而 PlaybackService 的 CacheDataSource

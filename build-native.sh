@@ -20,9 +20,19 @@ echo "work dir: $WORK"
 cp "$PROJ/app/src/main/cpp/"*.c "$WORK/jni/"
 cp "$PROJ/app/src/main/cpp/Android.mk" "$WORK/jni/"
 cp "$PROJ/app/src/main/cpp/Application.mk" "$WORK/jni/"
-# FFmpeg 预编译库（Ubuntu 侧生成）一起带进 ASCII 工作目录，路径里不能有中文
+# FFmpeg 预编译库（Ubuntu 侧生成）一起带进 ASCII 工作目录，路径里不能有中文。
+# 头文件三个 ABI 完全相同，仓库里只存一份（prebuilt/ffmpeg/include），
+# 这里按 ABI 复制一份到 ffmpeg/<abi>/include，保持 Android.mk 的路径不变。
 rm -rf "$WORK/jni/ffmpeg"
-cp -r "$PROJ/prebuilt/ffmpeg" "$WORK/jni/ffmpeg"
+mkdir -p "$WORK/jni/ffmpeg"
+cp -r "$PROJ/prebuilt/ffmpeg/include" "$WORK/jni/ffmpeg/include"
+for abi in arm64-v8a armeabi-v7a x86_64; do
+  if [ -d "$PROJ/prebuilt/ffmpeg/$abi/lib" ]; then
+    mkdir -p "$WORK/jni/ffmpeg/$abi"
+    cp -r "$PROJ/prebuilt/ffmpeg/$abi/lib" "$WORK/jni/ffmpeg/$abi/lib"
+    cp -r "$WORK/jni/ffmpeg/include" "$WORK/jni/ffmpeg/$abi/include"
+  fi
+done
 
 cd "$WORK"
 "$NDK/ndk-build.cmd" NDK_PROJECT_PATH=. APP_BUILD_SCRIPT=jni/Android.mk \

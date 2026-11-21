@@ -45,7 +45,10 @@ class AboutActivity : BaseActivity() {
         row(getString(R.string.about_theme), nightLabel())
 
         section(getString(R.string.about_changelog))
-        paragraph(readAsset("changelog.txt").ifBlank { getString(R.string.about_changelog_empty) })
+        paragraph(getString(R.string.about_changelog_note))
+        linkRow(getString(R.string.about_open_changelog)) {
+            startActivity(android.content.Intent(this, ChangelogActivity::class.java))
+        }
 
         section(getString(R.string.about_ai_title))
         paragraph(getString(R.string.about_ai_body))
