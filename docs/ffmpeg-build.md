@@ -1,7 +1,7 @@
 # FFmpeg 的编译选项与来源（GPL / LGPL 合规说明）
 
 本应用随 APK 分发 6 个原生库：`libuaciso.so`（本项目原创，GPL-3.0）、`libffaudio.so`（本项目原创，GPL-3.0）
-以及 **FFmpeg 7.1** 的 `libavcodec.so`、`libavformat.so`、`libavutil.so`、`libswresample.so`。
+以及 **FFmpeg 9.0** 的四个共享库（发布包里叫 `libdacavc2.so`、`libdacafmts.so`、`libdacvut.so`、`libdacswresmp.so`）。
 其中 FFmpeg 各库以 **GNU Lesser General Public License v2.1 或更高版本（LGPL-2.1-or-later）** 授权。
 
 > 为什么是 LGPL 而不是 GPL：FFmpeg 默认即为 LGPL-2.1-or-later，只有在 configure 时显式加上
@@ -12,7 +12,7 @@
 
 | 项 | 值 |
 |---|---|
-| 版本 | FFmpeg 7.1（`https://ffmpeg.org/releases/ffmpeg-7.1.tar.xz`） |
+| 版本 | FFmpeg 9.0（`https://ffmpeg.org/releases/ffmpeg-9.0.tar.xz`） |
 | 上游源码 | https://ffmpeg.org/download.html · https://git.ffmpeg.org/ffmpeg.git |
 | 是否修改源码 | 否（未打任何补丁，只做交叉编译配置） |
 | 许可全文 | 仓库 `LICENSES/LGPL-2.1.txt`，APK 内 `assets/licenses/LGPL-2.1.txt` |
@@ -88,7 +88,7 @@ LGPL-2.1 允许“使用该库的作品”以任意许可发布，但分发时�
 git clone https://github.com/awsl170/DAC-Web-Player
 cd DAC-Web-Player
 
-# 2) 在 Linux 上编译 FFmpeg（自动下载 NDK r27c 与 ffmpeg-7.1）
+# 2) 在 Linux 上编译 FFmpeg（自动下载 NDK r27c 与 ffmpeg-9.0）
 bash scripts/build-ffmpeg-android.sh
 
 # 3) 编译 native 库（libuaciso / libffaudio）并放进 jniLibs

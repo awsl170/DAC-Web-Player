@@ -36,12 +36,61 @@ class ThirdPartyActivity : BaseActivity() {
         Component("AndroidX DocumentFile", "1.0.1", "Apache-2.0", "SAF 下载目录读写。"),
         Component(
             "FFmpeg（libavcodec / libavformat / libavutil / libswresample）",
-            "7.1",
+            "9.0",
             "LGPL-2.1-or-later",
-            "本地音频文件的解码与重采样；以独立 .so 动态加载，未修改源码。\n" +
+            "本地与网络音频文件的解码、标签读取与重采样；以独立 .so 动态加载，未修改源码。\n" +
+                "为避开部分电视固件自带的同名库，发布包里的库名为 libdacavc2 / libdacafmts / libdacvut / libdacswresmp。\n" +
                 "完整编译选项见仓库 docs/ffmpeg-build.md 与 scripts/build-ffmpeg-android.sh，\n" +
                 "许可全文见 assets/licenses/LGPL-2.1.txt。",
             "https://ffmpeg.org/legal.html"
+        ),
+        Component(
+            "jcifs-ng（SMB / SMB2 / SMB3）",
+            "2.1.10",
+            "LGPL-2.1-or-later",
+            "连接局域网 SMB 共享、列目录与随机读取文件。\n" +
+                "许可全文见 assets/licenses/LGPL-2.1.txt。",
+            "https://github.com/AgNO3/jcifs-ng"
+        ),
+        Component(
+            "Apache Commons Net（FTP）",
+            "3.11.1",
+            "Apache-2.0",
+            "FTP 客户端的目录列表与断点续读。\n" +
+                "许可全文见 assets/licenses/Apache-2.0.txt。",
+            "https://commons.apache.org/proper/commons-net/"
+        ),
+        Component(
+            "JSch（SFTP）",
+            "0.2.20",
+            "BSD 3-Clause",
+            "SFTP 客户端（会话、目录与按偏移读取）。\n" +
+                "许可全文见 assets/licenses/BSD-JSch.txt。",
+            "https://github.com/mwiede/jsch"
+        ),
+        Component(
+            "Bouncy Castle Provider",
+            "1.76",
+            "Bouncy Castle License",
+            "jcifs-ng 的 NTLM 认证间接依赖。\n" +
+                "许可全文见 assets/licenses/Bouncy-Castle.txt。",
+            "https://www.bouncycastle.org/licence.html"
+        ),
+        Component(
+            "SLF4J API",
+            "1.7.36",
+            "MIT",
+            "jcifs-ng 的日志门面（不绑定具体实现）。\n" +
+                "许可全文见 assets/licenses/MIT.txt。",
+            "https://www.slf4j.org/license.html"
+        ),
+        Component(
+            "desugar_jdk_libs",
+            "2.1.4",
+            "GPL-2.0 + Classpath Exception",
+            "为 minSdk 22 提供 java.util.Base64 等新版核心库 API；只在构建期脱糖、运行期不改变其行为。\n" +
+                "许可全文见 assets/licenses/GPL-2.0-with-Classpath-Exception.txt。",
+            "https://developer.android.com/studio/write/java8-support-table"
         )
     )
 

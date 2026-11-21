@@ -40,6 +40,10 @@ Apache-2.0 第 4(d) 条要求：若被分发的工作中包含 `NOTICE` 文本�
 | androidx.media3:media3-datasource | 1.4.1 | Apache-2.0 | 缓存数据源（SimpleCache） |
 | androidx.media3:media3-database | 1.4.1 | Apache-2.0 | SimpleCache 索引数据库 |
 | androidx.media3:media3-ui | 1.4.1 | Apache-2.0 | 播放器 UI 组件 |
+| eu.agno3.jcifs:jcifs-ng | 2.1.10 | LGPL-2.1-or-later | SMB / SMB2 / SMB3 客户端（1.1 起） |
+| commons-net:commons-net | 3.11.1 | Apache-2.0 | FTP 客户端（1.1 起） |
+| com.github.mwiede:jsch | 0.2.20 | BSD 3-Clause | SFTP 客户端（1.1 起） |
+| com.android.tools:desugar_jdk_libs | 2.1.4 | GPL-2.0 + Classpath Exception | minSdk 22 的核心库脱糖（1.1 起） |
 
 ## 三、传递依赖（最终解析版本）
 
@@ -273,27 +277,50 @@ Apache-2.0 第 4(d) 条要求：若被分发的工作中包含 `NOTICE` 文本�
 
 ## 四、FFmpeg（LGPL-2.1-or-later）
 
-APK 内含 FFmpeg 7.1 的四个动态库：`libavcodec.so`、`libavformat.so`、`libavutil.so`、`libswresample.so`
-（`arm64-v8a`、`armeabi-v7a`、`x86_64` 各一套），用于本地音频文件的解码与重采样。它们与上述
-Apache-2.0 组件不同，采用 **GNU Lesser General Public License v2.1 或更高版本**。
+APK 内含 FFmpeg **9.0** 的四个动态库（`arm64-v8a`、`armeabi-v7a`、`x86_64` 各一套），
+用于本地音频文件与网络文件的解码与重采样。它们采用 **GNU Lesser General Public License
+v2.1 或更高版本**。
+
+> **关于库名**：从 1.1 起这些库不再叫 `libavcodec.so` 等，而是 `libdacavc2.so`
+> （avcodec）、`libdacafmts.so`（avformat）、`libdacvut.so`（avutil）、
+> `libdacswresmp.so`（swresample）。原因是部分 Android 5.1 电视的固件自带同名
+> `libavcodec.so`/`libavformat.so`，系统链接器会优先满足我们的依赖，导致 APK 里的库
+> 根本没被加载。改的是 ELF 的 soname/dynstr 中**等长的库名字符串**，FFmpeg 的代码本身没有任何修改。
 
 | 项 | 内容 |
 |---|---|
-| 组件 | FFmpeg 7.1（libavcodec / libavformat / libavutil / libswresample） |
+| 组件 | FFmpeg 9.0（libavcodec / libavformat / libavutil / libswresample，soname 见上） |
 | 许可 | LGPL-2.1-or-later（configure 未使用 `--enable-gpl` / `--enable-nonfree`） |
-| 上游 | https://ffmpeg.org/ · 源码 https://ffmpeg.org/releases/ffmpeg-7.1.tar.xz |
-| 修改 | 无。仅以 NDK r27c 交叉编译，未改动任何源码。 |
+| 上游 | https://ffmpeg.org/ · 源码 https://ffmpeg.org/releases/ffmpeg-9.0.tar.xz |
+| 修改 | 无源码修改；仅交叉编译后重命名共享库的 soname（`scripts/rename-ffmpeg-soname.py`） |
 | 许可全文 | 仓库 `LICENSES/LGPL-2.1.txt`；APK 内 `assets/licenses/LGPL-2.1.txt` |
 | 编译选项 | `docs/ffmpeg-build.md`、`docs/ffmpeg-configure-flags.txt`、`scripts/build-ffmpeg-android.sh` |
 
-FFmpeg 以**独立共享库**形式分发，应用通过 `System.loadLibrary("avcodec")` 等动态加载：
-任何人可以用自己编译的、接口兼容的 `libav*.so` 替换 APK 中的同名文件并重新签名安装，
+FFmpeg 以**独立共享库**形式分发，应用通过 `System.loadLibrary("dacavc2")` 等动态加载：
+任何人可以用自己编译的、接口兼容的 `libdac*.so` 替换 APK 中的同名文件并重新签名安装，
 从而使用修改后的 FFmpeg —— 这满足 LGPL-2.1 第 6(b) 条关于“合适的共享库机制”的要求。
-完整的编译脚本与全部 configure 选项随仓库提供（第 6(a)/6(d) 条），可完整复现这些二进制。
+完整的编译脚本与全部 configure 选项随仓库提供（第 6(a)/6(d) 条），可完整复现这些二进制
+（含 soname 重命名脚本，二者合起来即可得到与发布包逐字节一致的库）。
 
 FFmpeg 的 copyright 归 FFmpeg 项目及其贡献者所有（Copyright (c) 2000-2026 the FFmpeg developers）。
 
-## 五、本项目自身代码
+## 五、网络协议库（SMB / FTP / SFTP / WebDAV）
+
+1.1 新增的“文件服务器”功能用到下列组件（源码可从 Maven Central 获取，编译进 APK 的 dex）：
+
+| 组件 | 版本 | 许可 | 用途 |
+|---|---|---|---|
+| `eu.agno3.jcifs:jcifs-ng` | 2.1.10 | LGPL-2.1-or-later | SMB / SMB2 / SMB3 客户端（`LICENSES/LGPL-2.1.txt`） |
+| `commons-net:commons-net` | 3.11.1 | Apache-2.0 | FTP 客户端（`LICENSES/Apache-2.0.txt`） |
+| `com.github.mwiede:jsch` | 0.2.20 | BSD 三条款（JCraft） | SFTP 客户端（`LICENSES/BSD-JSch.txt`） |
+| `org.bouncycastle:bcprov-jdk18on` | 1.76 | Bouncy Castle License（MIT 式） | jcifs-ng 的 NTLM 认证依赖（`LICENSES/Bouncy-Castle.txt`） |
+| `org.slf4j:slf4j-api` | 1.7.36 | MIT | jcifs-ng 的日志门面（`LICENSES/MIT.txt`） |
+| `com.android.tools:desugar_jdk_libs` | 2.1.4 | GPL-2.0 + Classpath Exception | minSdk 22 所需的核心库脱糖，如 `java.util.Base64`（`LICENSES/GPL-2.0-with-Classpath-Exception.txt`） |
+
+WebDAV 使用已有的 OkHttp（Apache-2.0）实现，未引入新依赖。以上组件的许可全文同时放在
+APK 的 `assets/licenses/` 下，并可在应用内「关于 → 第三方组件」页查看要点与官方链接。
+
+## 六、本项目自身代码
 
 除上述第三方组件外，其余代码（Kotlin / Java / C）均由本项目作者编写，以 GPL-3.0 授权，包括：
 
@@ -302,7 +329,7 @@ FFmpeg 的 copyright 归 FFmpeg 项目及其贡献者所有（Copyright (c) 2000
 - `app/src/main/java/com/dacweb/player/usb/*` —— UAC2 描述符解析、Feature Unit 音量、采样率控制
 - `app/src/main/cpp/ffaudio.c` —— FFmpeg 解码门面（JNI）
 
-## 六、非代码资产
+## 七、非代码资产
 
 - 应用图标（`res/drawable/ic_launcher_foreground.xml` 等）为项目自制矢量图。
 - 未内置任何第三方音乐、封面或字体文件；封面与歌词均在运行时从公开接口获取，不随安装包分发。

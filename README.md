@@ -158,7 +158,7 @@ app/src/main/
 Apache-2.0 与 GPL-3.0 兼容（Apache-2.0 代码可并入 GPLv3 作品）。完整的组件清单、版本与
 NOTICE 检查结论见 [NOTICE.md](NOTICE.md)，Apache-2.0 全文见 [LICENSES/Apache-2.0.txt](LICENSES/Apache-2.0.txt)。
 
-APK 里还包含 **FFmpeg 7.1** 的 `libavcodec/libavformat/libavutil/libswresample`（每个 ABI 一套），
+APK 里还包含 **FFmpeg 9.0** 的四个共享库（每个 ABI 一套，发布包里的名字是 `libdacavc2/libdacafmts/libdacvut/libdacswresmp`），
 以 **LGPL-2.1-or-later** 授权：它以独立 `.so` 动态加载，未修改源码。随仓库提供的
 [scripts/build-ffmpeg-android.sh](scripts/build-ffmpeg-android.sh) 与
 [docs/ffmpeg-build.md](docs/ffmpeg-build.md) 记录了完整的 NDK 版本与全部 `configure` 选项，
