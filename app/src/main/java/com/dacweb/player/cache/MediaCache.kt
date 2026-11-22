@@ -74,8 +74,14 @@ object MediaCache {
 
     private const val DIR = "audio_cache"
 
-    /** 音频缓存上限；LRU 淘汰，超过就删最久没听的。 */
-    private const val MAX_BYTES = 1536L * 1024 * 1024
+    /**
+     * 音频缓存上限；LRU 淘汰，超过就删最久没听的。
+     *
+     * 这个缓存只服务「本次使用」：同一首回跳/重播不用重新拉、下载时已过的片段可以直接复用，
+     * 用完（播放服务销毁 / 退出应用）就整体释放，不在手机上长期留几百 MB。
+     * 所以上限压到 256 MB——比一首无损曲的几倍还大，但不会再堆到 1.5 GB。
+     */
+    private const val MAX_BYTES = 256L * 1024 * 1024
 
     private const val UA =
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +

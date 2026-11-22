@@ -213,4 +213,22 @@ object AppPrefs {
                 c.smallestScreenWidthDp >= 600
         }
     }
+
+    /**
+     * 是否大屏模式（电视 / 盒子 / 平板）。
+     *
+     * 大屏模式下退出应用就不留后台播放；手机上则照旧后台播放。
+     * 判定顺序：系统明确声明是电视形态 → 有 Leanback 特性 → 平板级宽度（>=720dp）
+     * → 没有触摸屏但宽度 >=600dp。手机最小宽度只有 360~420dp，横过来也不会误判。
+     */
+    fun largeScreen(ctx: Context): Boolean {
+        val c = ctx.resources.configuration
+        val uiType = c.uiMode and android.content.res.Configuration.UI_MODE_TYPE_MASK
+        if (uiType == android.content.res.Configuration.UI_MODE_TYPE_TELEVISION) return true
+        val pm = ctx.packageManager
+        if (pm.hasSystemFeature(android.content.pm.PackageManager.FEATURE_LEANBACK)) return true
+        if (c.smallestScreenWidthDp >= 720) return true
+        return c.smallestScreenWidthDp >= 600 &&
+            !pm.hasSystemFeature(android.content.pm.PackageManager.FEATURE_TOUCHSCREEN)
+    }
 }

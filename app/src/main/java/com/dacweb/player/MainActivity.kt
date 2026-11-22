@@ -253,6 +253,14 @@ class MainActivity : BaseActivity() {
         PlayerHub.controller?.removeListener(listener)
     }
 
+    /** 大屏（电视/盒子）模式：退出应用就停掉播放、释放缓存，不在后台留着。 */
+    override fun onDestroy() {
+        if (isFinishing && AppPrefs.largeScreen(this)) {
+            com.dacweb.player.audio.PlaybackService.stop(this)
+        }
+        super.onDestroy()
+    }
+
     private val listener = object : Player.Listener {
         override fun onEvents(player: Player, events: Player.Events) {
             updateMini()

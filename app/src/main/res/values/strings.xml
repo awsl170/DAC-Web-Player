@@ -128,7 +128,10 @@
     <string name="cache_clear_title">清理缓存</string>
     <string name="cache_image_max">图片缓存上限</string>
     <string name="cache_image_max_item">%1$d MB</string>
-    <string name="cache_note">图片缓存超过上限会自动回收；所有缓存最多保留 2 天。</string>
+    <string name="cache_note">音频缓存只是本次播放期间的临时缓冲（回跳、重播、下载复用同一份数据），退出应用就整体释放，不会长期占用存储；想离线听请用下载。封面图片另有上限，最多保留 2 天。</string>
+    <string name="notif_channel">播放控制</string>
+    <string name="notif_prev">上一首</string>
+    <string name="notif_next">下一首</string>
     <string name="cache_cleared">已清理：%1$s</string>
     <string name="cache_item_images">图片缓存</string>
     <string name="cache_item_links">直链记录</string>
