@@ -192,6 +192,7 @@
     <string name="settings_dac_note">检测 USB DAC 是否可被独占，以及硬件音量、采样率控制</string>
     <string name="dac_title">DAC / USB 音频</string>
     <string name="dac_empty">没有检测到 USB 设备。把 DAC 插上后再进来看看。</string>
+    <string name="dac_non_audio">另外还有 %2$d 个不带音频接口的 USB 设备（%1$s 等，通常是板载蓝牙/Wi-Fi 模块），与 DAC 直通无关，已隐藏。</string>
     <string name="dac_hint">这里只做探测：能不能独占、硬件音量范围、支持哪些采样率。真正的直通播放要等 native 输出层。</string>
     <string name="dac_unknown_device">USB 设备</string>
     <string name="dac_not_probed">尚未检测</string>

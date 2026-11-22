@@ -62,7 +62,7 @@
         <item name="colorOnPrimaryContainer">@color/palette_red_on_container</item>
     </style>
 
-    <color name="ic_launcher_background">#1B1B1F</color>
+    <color name="ic_launcher_background">#6750A4</color>
 
     <style name="CoverShape">
         <item name="cornerFamily">rounded</item>

@@ -148,12 +148,26 @@ class DacActivity : BaseActivity() {
         if (isFinishing || isDestroyed) return
         b.list.removeAllViews()
         val devices = manager.deviceList.values.toList()
-        if (devices.isEmpty()) {
-            b.list.addView(hint(getString(R.string.dac_empty)))
-            return
+        // 只有带音频接口（UAC）的设备才是 DAC。板载蓝牙/Wi-Fi 这类组合模块也挂在 USB 总线上
+        // （例如 MediaTek 0E8D:76A1 "BT+WIFI"，接口类 e0/01/01 + ff），列进来只会误导。
+        val audio = devices.filter { d ->
+            (0 until d.interfaceCount).any {
+                d.getInterface(it).interfaceClass == android.hardware.usb.UsbConstants.USB_CLASS_AUDIO
+            }
         }
-        b.list.addView(hint(getString(R.string.dac_hint)))
-        devices.forEach { b.list.addView(buildCard(it)) }
+        val others = devices - audio.toSet()
+        if (audio.isEmpty()) {
+            b.list.addView(hint(getString(R.string.dac_empty)))
+        } else {
+            b.list.addView(hint(getString(R.string.dac_hint)))
+            audio.forEach { b.list.addView(buildCard(it)) }
+        }
+        if (others.isNotEmpty()) {
+            val names = others.joinToString("、") {
+                it.productName?.takeIf { n -> n.isNotBlank() } ?: it.deviceName
+            }
+            b.list.addView(hint(getString(R.string.dac_non_audio, names.take(60), others.size)))
+        }
     }
 
     private fun buildCard(device: UsbDevice): View {

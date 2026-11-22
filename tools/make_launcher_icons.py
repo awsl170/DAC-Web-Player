@@ -55,11 +55,11 @@ path += [(78, 28)]
 
 img = Image.new("RGBA", (S, S), (0, 0, 0, 0))
 d = ImageDraw.Draw(img)
-# 圆角底：深色 #1B1B1F
+# 圆角底：品牌紫 #6750A4（深色电视桌面上也看得见）
 bg = Image.new("RGBA", (S, S), (0, 0, 0, 0))
 bd = ImageDraw.Draw(bg)
 r = int(22 * K)
-bd.rounded_rectangle([0, 0, S - 1, S - 1], radius=r, fill=(27, 27, 31, 255))
+bd.rounded_rectangle([0, 0, S - 1, S - 1], radius=r, fill=(103, 80, 164, 255))
 img = Image.alpha_composite(img, bg)
 d = ImageDraw.Draw(img)
 d.polygon([p(x, y) for (x, y) in path], fill=(255, 255, 255, 255))
