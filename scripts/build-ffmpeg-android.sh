@@ -125,6 +125,9 @@ build_one() {
   # 去掉静态库和示例，只留 .so + 头文件
   find "$prefix/lib" -name '*.a' -delete 2>/dev/null || true
   find "$prefix/lib" -name '*.so' -exec "$TOOLCHAIN/bin/llvm-strip" --strip-unneeded {} \; 2>/dev/null || true
+  # make install 会额外装一份 share/ffmpeg/examples/*.c（上游演示程序，本项目不编译），
+  # 三个 ABI 各一份完全相同的内容，留着只会占仓库并把 Sonar 重复率顶到 10% 以上
+  rm -rf "$prefix/share"
   echo "   ✅ $abi 完成: $(du -sh "$prefix/lib" | cut -f1)  (lib: $(ls "$prefix/lib" | tr '\n' ' '))"
 }
 

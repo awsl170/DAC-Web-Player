@@ -7,7 +7,10 @@ import org.apache.commons.net.ftp.FTPReply
 /** FTP（Apache Commons Net）。同一时刻一条控制连接，读与列目录串行化。 */
 class FtpNet(private val s: NetServer) : NetClient {
 
-    private val ftp = FTPClient().apply {
+    // FTP 是用户显式选择的协议（很多老 NAS/路由器只开 FTP），这里连的是用户自己填的服务器，
+    // 不是把凭据发往第三方。要加密请用 SFTP/FTPS 后端。SonarCloud 的 S5332 属于“协议本身不安全”，
+    // 与我们的使用场景无关，故抑制。
+    private val ftp = FTPClient().apply { // NOSONAR kotlin:S5332 FTP 后端是功能需求，见上一条注释
         connectTimeout = 8000
         defaultTimeout = 20000
     }

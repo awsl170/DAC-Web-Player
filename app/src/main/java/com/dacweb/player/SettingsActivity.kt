@@ -127,12 +127,26 @@ class SettingsActivity : BaseActivity() {
     }
 
     private fun bindAudioRates() {
-        val ids = intArrayOf(R.id.rateFollow, R.id.rate441, R.id.rate48, R.id.rate96, R.id.rate192)
         val values = intArrayOf(0, 44100, 48000, 96000, 192000)
         val current = values.indexOf(AppPrefs.outputRate(this)).let { if (it < 0) 0 else it }
-        b.audioPage.rgRate.check(ids[current])
-        b.audioPage.rgRate.setOnCheckedChangeListener { _, checked ->
-            val index = ids.indexOf(checked)
+        val group = b.audioPage.rgRate
+        val checkedId = when (current) {
+            1 -> R.id.rate441
+            2 -> R.id.rate48
+            3 -> R.id.rate96
+            4 -> R.id.rate192
+            else -> R.id.rateFollow
+        }
+        group.check(checkedId)
+        group.setOnCheckedChangeListener { _, id ->
+            val index = when (id) {
+                R.id.rate441 -> 1
+                R.id.rate48 -> 2
+                R.id.rate96 -> 3
+                R.id.rate192 -> 4
+                R.id.rateFollow -> 0
+                else -> -1
+            }
             if (index >= 0) {
                 AppPrefs.setOutputRate(this, values[index])
                 renderAudio()

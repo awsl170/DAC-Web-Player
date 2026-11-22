@@ -29,3 +29,7 @@ signing.properties
 
 # 插件示例的编译产物（build-sample.sh 自己生成）
 plugin-sample/*.jar
+
+# FFmpeg 构建产物里的示例程序（make install 会装一份 share/ffmpeg/examples，
+# 三个 ABI 各一份完全相同的 .c 文件，只会污染仓库和 Sonar 重复率）
+prebuilt/ffmpeg/*/share/
