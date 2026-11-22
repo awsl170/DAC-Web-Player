@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 遥控器焦点效果关闭时的列表行背景：只有按下去的涟漪，没有焦点描边/底色 -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <ripple android:color="?attr/colorControlHighlight">
+            <item android:id="@android:id/mask">
+                <shape android:shape="rectangle">
+                    <solid android:color="#FFFFFFFF" />
+                </shape>
+            </item>
+        </ripple>
+    </item>
+</selector>

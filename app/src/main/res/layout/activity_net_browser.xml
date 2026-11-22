@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -17,7 +18,7 @@
             android:id="@+id/netBack"
             android:layout_width="44dp"
             android:layout_height="44dp"
-            android:background="@drawable/bg_focus_round"
+            android:background="?attr/rowFocusRound"
             android:contentDescription="@string/net_close"
             android:padding="10dp"
             android:src="@drawable/ic_arrow_back" />
@@ -31,7 +32,66 @@
             android:singleLine="true"
             android:textSize="18sp"
             android:textStyle="bold" />
+
+        <ImageButton
+            android:id="@+id/netPlayFolder"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="?attr/rowFocusRound"
+            android:contentDescription="@string/net_play_folder"
+            android:padding="10dp"
+            android:src="@drawable/ic_play" />
     </LinearLayout>
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="8dp"
+        app:cardBackgroundColor="?attr/colorSurfaceVariant"
+        app:cardCornerRadius="22dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="14dp"
+            android:paddingEnd="2dp">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:contentDescription="@string/net_search"
+                android:src="@drawable/ic_search" />
+
+            <EditText
+                android:id="@+id/netSearch"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="10dp"
+                android:layout_weight="1"
+                android:background="@null"
+                android:hint="@string/net_search_hint"
+                android:imeOptions="actionSearch"
+                android:inputType="text"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:textSize="15sp" />
+
+            <ImageButton
+                android:id="@+id/netClearSearch"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/rowFocusRound"
+                android:contentDescription="@string/clear"
+                android:padding="10dp"
+                android:src="@drawable/ic_close"
+                android:visibility="gone" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 
     <TextView
         android:id="@+id/netInfo"

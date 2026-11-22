@@ -23,6 +23,12 @@ abstract class BaseActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         theme.applyStyle(overlayOf(AppPrefs.themeIndex(this)), true)
+        // 遥控器焦点效果：竖屏手机默认关（描边只在遥控器上有意义），横屏大屏默认开
+        theme.applyStyle(
+            if (AppPrefs.focusVisualOn(this)) R.style.ThemeOverlay_MusicPlayer_FocusOn
+            else R.style.ThemeOverlay_MusicPlayer_FocusOff,
+            true
+        )
         super.onCreate(savedInstanceState)
         setupSystemBars()
     }
@@ -75,6 +81,13 @@ abstract class BaseActivity : AppCompatActivity() {
         )
 
         fun overlayOf(index: Int): Int = overlayIds[index.coerceIn(0, overlayIds.size - 1)]
+
+        /** 代码里动态建行时用：取当前主题的列表行/胶囊按钮背景资源 id。 */
+        fun rowFocusRes(ctx: android.content.Context, round: Boolean = false): Int {
+            val tv = android.util.TypedValue()
+            ctx.theme.resolveAttribute(if (round) R.attr.rowFocusRound else R.attr.rowFocus, tv, true)
+            return if (tv.resourceId != 0) tv.resourceId else R.drawable.bg_focus
+        }
 
         /** 深浅色模式：把偏好映射成 AppCompatDelegate 的模式。 */
         fun applyNightMode(mode: Int) {

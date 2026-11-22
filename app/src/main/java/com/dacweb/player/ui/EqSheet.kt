@@ -12,6 +12,7 @@ import android.widget.LinearLayout
 import android.widget.SeekBar
 import android.widget.Spinner
 import android.widget.TextView
+import com.dacweb.player.BaseActivity
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.dacweb.player.R
 import com.dacweb.player.audio.Eq
@@ -61,7 +62,7 @@ class EqSheet(context: Context) : Dialog(context) {
             val c = root.getChildAt(i)
             if (c is android.widget.Spinner) continue
             if (c is android.widget.LinearLayout) { focusRings(c); continue }
-            if (c.isFocusable) c.setBackgroundResource(R.drawable.bg_focus_round)
+            if (c.isFocusable) c.setBackgroundResource(BaseActivity.rowFocusRes(context, round = true))
         }
     }
 

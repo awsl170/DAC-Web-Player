@@ -36,6 +36,16 @@ object DacRoute {
     @Volatile
     private var needsPermission = false
 
+    /**
+     * 起播预热中：DAC 侧缓冲还没灌满，ExoPlayer 被按住不动。
+     * 在线曲目第一次打开要先连服务器 + 解复用 + 填缓冲，这段时间进度条如果先跑，
+     * 声音就会晚到，歌词跟着错位——所以先把两边都停住，缓冲够了再一起走。
+     */
+    private var priming = false
+    private var primeSince = 0L
+
+    private const val PRIME_TIMEOUT_MS = 4000L
+
     /** 需要用户点一下授权。 */
     fun permissionNeeded(): Boolean = needsPermission
 
@@ -75,6 +85,7 @@ object DacRoute {
         format = ""
         failure = null
         needsPermission = false
+        priming = false
     }
 
     /**
@@ -109,6 +120,22 @@ object DacRoute {
         val uri = c.currentMediaItem?.localConfiguration?.uri?.toString()
         if (uri.isNullOrBlank()) return
 
+        // 预热中：两边都别动，等 DAC 缓冲灌到 2/3 或超时，再让 ExoPlayer 和 USB 同时开跑
+        if (priming && uri == boundUri) {
+            if (!DacPlayer.started) {
+                priming = false
+                DacPlayer.error?.let { failure = it }
+            } else if (DacPlayer.primeReady() || System.currentTimeMillis() - primeSince > PRIME_TIMEOUT_MS) {
+                priming = false
+                DacPlayer.resume()
+                c.play()
+            }
+            format = DacPlayer.streamLabel
+            return
+        }
+        // 预热途中曲目被换掉：放弃这次预热，走下面的正常换曲逻辑
+        if (priming) priming = false
+
         val pos = c.currentPosition.coerceAtLeast(0L)
         val dur = c.duration
         // 已经播到结尾：decodeLoop 会自己停下，这里不要再从"末尾"重启（否则会反复开关一轮）
@@ -126,7 +153,16 @@ object DacRoute {
             if (now - lastAttemptMs < 800) return
             lastAttemptMs = now
             startAt(ctx, uri, pos)
-            if (failure == null && !c.isPlaying) c.play()
+            if (failure != null) return
+            // 用户想听（正在播/刚点播放）：先按住 ExoPlayer，等 DAC 缓冲灌满再一起走
+            if (c.playWhenReady || c.isPlaying) {
+                priming = true
+                primeSince = System.currentTimeMillis()
+                DacPlayer.primeHold()
+                c.pause()
+            } else if (!c.isPlaying) {
+                c.play()
+            }
             return
         }
         if (DacPlayer.error != null) {
@@ -143,7 +179,14 @@ object DacRoute {
         val c = player ?: return
         if (!enabled(ctx)) return
         val uri = c.currentMediaItem?.localConfiguration?.uri?.toString() ?: return
+        val wantPlay = c.playWhenReady || c.isPlaying
         startAt(ctx, uri, c.currentPosition.coerceAtLeast(0L))
+        if (failure == null && wantPlay) {
+            priming = true
+            primeSince = System.currentTimeMillis()
+            DacPlayer.primeHold()
+            c.pause()
+        }
     }
 
     /** 退出直通（关独占/拔线）：恢复 ExoPlayer 音量，别让播放器一直静音。 */

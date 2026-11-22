@@ -284,6 +284,20 @@ object DacPlayer {
     /** 开启直通播放。返回 null 表示成功，否则是失败原因。 */
     /** 只读源文件的采样率/声道/位深，用来决定 DAC 该切到哪个采样率。 */
     private fun probeSource(ctx: Context, url: String): SourceProbe {
+        // 网络源第一次打开常因服务端限流/握手慢而失败（Failed to instantiate extractor），
+        // 失败后 startLocked 会退回 48 kHz 起流 ⇒ 96k 曲目被重采样。这里给在线源多试两次。
+        val attempts = if (isLocalFile(url)) 1 else 3
+        var last: SourceProbe? = null
+        for (i in 1..attempts) {
+            val p = probeSourceOnce(ctx, url)
+            if (p.mime != "?") return p
+            last = p
+            if (i < attempts) runCatching { Thread.sleep(300) }
+        }
+        return last ?: SourceProbe("?", 0, 0, -1)
+    }
+
+    private fun probeSourceOnce(ctx: Context, url: String): SourceProbe {
         var ex: MediaExtractor? = null
         return try {
             ex = openExtractor(ctx, url)
@@ -504,6 +518,25 @@ object DacPlayer {
         if (session == null) return
         UacIso.nativeSetPaused(false)
         isPlaying = true
+    }
+
+    /**
+     * 起播预热：流已经建好，但先不让 USB 出声。
+     * native 侧暂停时送静音且**不消耗环形缓冲**（uac_iso.c fill_stream 的 g_paused 分支），
+     * 所以解码线程会把缓冲灌满后阻塞；等缓冲够了再 resume，出声就没有起播空档，
+     * ExoPlayer 的进度也不会跑在声音前面（歌词/时间才对得上）。
+     */
+    fun primeHold() {
+        if (session == null) return
+        runCatching { UacIso.nativeSetPaused(true) }
+    }
+
+    /** 预热是否完成：环形缓冲至少灌了 2/3。没有会话时当作完成。 */
+    fun primeReady(): Boolean {
+        if (session == null) return true
+        val cap = UacIso.capacity()
+        if (cap <= 0) return true
+        return UacIso.buffered() >= cap * 2 / 3
     }
 
     fun stop() = synchronized(opLock) {

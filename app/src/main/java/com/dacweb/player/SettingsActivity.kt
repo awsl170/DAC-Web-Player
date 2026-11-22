@@ -78,6 +78,7 @@ class SettingsActivity : BaseActivity() {
         b.rowCacheUsage.setOnClickListener { render() }
         b.rowClearCache.setOnClickListener { clearCacheDialog() }
         b.rowImageMax.setOnClickListener { pickImageMax() }
+        b.rowFocusVisual.setOnClickListener { pickFocusVisual() }
         b.audioPage.rowDac.setOnClickListener {
             startActivity(android.content.Intent(this, DacActivity::class.java))
         }
@@ -173,6 +174,7 @@ class SettingsActivity : BaseActivity() {
         b.valueConcurrency.text = getString(R.string.concurrency_item, AppPrefs.concurrency(this))
         b.valueCacheUsage.text = CacheManager.summary(this)
         b.valueImageMax.text = getString(R.string.cache_image_max_item, AppPrefs.imageCacheMb(this))
+        b.valueFocusVisual.text = focusVisualLabel(AppPrefs.focusVisualMode(this))
         val mode = AppPrefs.nightMode(this)
         b.nightGroup.check(
             when (mode) {
@@ -181,6 +183,30 @@ class SettingsActivity : BaseActivity() {
                 else -> R.id.nightSystem
             }
         )
+    }
+
+    private fun focusVisualLabel(mode: Int): String = getString(
+        when (mode) {
+            AppPrefs.FOCUS_ON -> R.string.focus_on
+            AppPrefs.FOCUS_OFF -> R.string.focus_off
+            else -> R.string.focus_auto
+        }
+    )
+
+    private fun pickFocusVisual() {
+        val modes = intArrayOf(AppPrefs.FOCUS_AUTO, AppPrefs.FOCUS_ON, AppPrefs.FOCUS_OFF)
+        val labels = modes.map { focusVisualLabel(it) }.toTypedArray()
+        val current = modes.indexOf(AppPrefs.focusVisualMode(this)).coerceAtLeast(0)
+        AlertDialog.Builder(this)
+            .setTitle(R.string.settings_focus_visual)
+            .setSingleChoiceItems(labels, current) { d, which ->
+                AppPrefs.setFocusVisualMode(this, modes[which])
+                d.dismiss()
+                // 焦点描边是主题级的，必须重建界面才生效
+                recreate()
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
     }
 
     private fun pickQuality() {

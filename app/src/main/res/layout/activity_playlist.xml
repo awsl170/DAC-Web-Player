@@ -33,7 +33,7 @@
             android:id="@+id/playAll"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/bg_focus"
+            android:background="?attr/rowFocus"
             android:clickable="true"
             android:focusable="true"
             android:paddingHorizontal="12dp"

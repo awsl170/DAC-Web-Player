@@ -10,6 +10,7 @@ import android.widget.ProgressBar
 import android.widget.ScrollView
 import android.widget.TextView
 import androidx.activity.ComponentActivity
+import com.dacweb.player.BaseActivity
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
@@ -125,7 +126,7 @@ object ServerPickDialog {
             setPadding(px(12), px(12), px(12), px(12))
             isFocusable = true
             isClickable = true
-            background = ContextCompat.getDrawable(ctx, R.drawable.bg_focus)
+            background = ContextCompat.getDrawable(ctx, BaseActivity.rowFocusRes(ctx))
             setOnLongClickListener {
                 onLongClick?.invoke()
                 onLongClick != null

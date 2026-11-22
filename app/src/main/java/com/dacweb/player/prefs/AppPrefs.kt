@@ -186,4 +186,31 @@ object AppPrefs {
     fun setOutputRate(ctx: Context, rate: Int) {
         sp(ctx).edit().putInt("output_rate", rate).apply()
     }
+
+    // ---------------------------------------------------------- 遥控器焦点效果
+    const val FOCUS_AUTO = 0
+    const val FOCUS_ON = 1
+    const val FOCUS_OFF = 2
+
+    /** 遥控器焦点高亮：0=跟随屏幕形态（默认），1=总是开，2=总是关 */
+    fun focusVisualMode(ctx: Context): Int = sp(ctx).getInt("focus_visual", FOCUS_AUTO)
+
+    fun setFocusVisualMode(ctx: Context, value: Int) {
+        sp(ctx).edit().putInt("focus_visual", value).apply()
+    }
+
+    /**
+     * 当前窗口要不要画遥控器焦点框。
+     * 跟随屏幕形态时：竖屏手机不给（描边在触摸屏上只是干扰），横屏大屏（电视/盒子）给，
+     * 判定用 smallestScreenWidthDp >= 600，手机横过来（约 360~420dp）仍然不画。
+     */
+    fun focusVisualOn(ctx: Context): Boolean = when (focusVisualMode(ctx)) {
+        FOCUS_ON -> true
+        FOCUS_OFF -> false
+        else -> {
+            val c = ctx.resources.configuration
+            c.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE &&
+                c.smallestScreenWidthDp >= 600
+        }
+    }
 }

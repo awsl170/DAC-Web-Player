@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 列表行/普通按钮的背景：遥控器焦点要不要高亮由主题覆盖层决定（见 themes.xml 的
+         ThemeOverlay.MusicPlayer.FocusOn / FocusOff），布局里不要直接写 @drawable/bg_focus，
+         否则竖屏手机也会出现那圈紫色描边。 -->
+    <attr name="rowFocus" format="reference" />
+    <!-- 圆形/胶囊按钮的版本 -->
+    <attr name="rowFocusRound" format="reference" />
+</resources>

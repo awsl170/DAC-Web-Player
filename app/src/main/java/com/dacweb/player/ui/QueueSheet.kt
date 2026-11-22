@@ -9,6 +9,7 @@ import android.view.WindowManager
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import com.dacweb.player.BaseActivity
 import com.dacweb.player.R
 import com.dacweb.player.audio.PlayQueue
 import com.dacweb.player.model.Track
@@ -72,7 +73,7 @@ class QueueSheet(context: Context, private val onPick: (Int) -> Unit) : Dialog(c
         val row = LinearLayout(ctx).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(0, (12 * d).toInt(), 0, (12 * d).toInt())
-            setBackgroundResource(R.drawable.bg_focus)
+            setBackgroundResource(BaseActivity.rowFocusRes(ctx))
             isClickable = true
             isFocusable = true
             setOnClickListener {

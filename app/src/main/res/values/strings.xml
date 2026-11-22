@@ -114,6 +114,11 @@
     <string name="eq_virtualizer">环绕效果</string>
     <string name="eq_unavailable">这台设备的音频驱动不支持均衡器</string>
     <string name="source_changed">已切换音源，请重新搜索</string>
+    <string name="settings_focus_visual">遥控器焦点效果</string>
+    <string name="focus_visual_title">焦点高亮描边</string>
+    <string name="focus_auto">自动（竖屏关，横屏大屏开）</string>
+    <string name="focus_on">总是开启</string>
+    <string name="focus_off">总是关闭</string>
     <string name="settings_lyrics">歌词</string>
     <string name="lyric_size">字号</string>
     <string name="lyric_color">颜色</string>
@@ -377,6 +382,15 @@
     <string name="net_parent">返回上级目录</string>
     <string name="net_folder">文件夹</string>
     <string name="net_count">%1$d 个音频文件，%2$d 个文件夹</string>
+    <string name="net_search_hint">搜索本机服务器上的音频文件</string>
+    <string name="net_search">搜索</string>
+    <string name="net_play_folder">播放此文件夹（含子文件夹）</string>
+    <string name="net_searching">搜索中…（已扫描 %1$d 个文件夹）</string>
+    <string name="net_search_result">找到 %1$d 个结果（%2$s）</string>
+    <string name="net_search_empty">没有找到包含“%1$s”的音频文件</string>
+    <string name="net_scanning">正在扫描文件夹（%1$d 首）…</string>
+    <string name="net_scan_empty">这个文件夹及其子文件夹里没有音频文件</string>
+    <string name="net_search_scope">全服务器（从起始目录往下）</string>
     <string name="net_pick_title">局域网里的 SMB 服务器</string>
     <string name="net_manual">手动填写</string>
     <string name="net_auto">自动搜索服务器</string>

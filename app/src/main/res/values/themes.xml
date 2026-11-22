@@ -2,6 +2,21 @@
 <resources>
     <style name="Theme.MusicPlayer" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="android:windowBackground">?android:attr/colorBackground</item>
+        <!-- 默认给"有焦点效果"的一套，BaseActivity 会在 inflate 前按设置叠 FocusOff/FocusOn -->
+        <item name="rowFocus">@drawable/bg_focus</item>
+        <item name="rowFocusRound">@drawable/bg_focus_round</item>
+    </style>
+
+    <!-- 遥控器焦点效果：开（电视/横屏大屏默认）/ 关（竖屏手机默认）。
+         只换背景 drawable，布局和代码都不用改。 -->
+    <style name="ThemeOverlay.MusicPlayer.FocusOn" parent="">
+        <item name="rowFocus">@drawable/bg_focus</item>
+        <item name="rowFocusRound">@drawable/bg_focus_round</item>
+    </style>
+
+    <style name="ThemeOverlay.MusicPlayer.FocusOff" parent="">
+        <item name="rowFocus">@drawable/bg_row_plain</item>
+        <item name="rowFocusRound">@drawable/bg_row_plain_round</item>
     </style>
 
     <!-- 主题色板覆盖层，运行时由 BaseActivity 通过 theme.applyStyle() 叠加 -->
